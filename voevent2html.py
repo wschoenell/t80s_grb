@@ -24,13 +24,12 @@ Examples:
 """
 
 # Copyright 2010 Roy D. Williams and Dave Kuhlmann
+import re
 
-
-import sys
-import os
-import getopt
 import VOEventLib.VOEvent
 import VOEventLib.Vutil
+
+http_regex = re.compile('http:(.*?)\<')
 
 try:
     from cStringIO import StringIO
@@ -74,7 +73,7 @@ def display(v, o):
     g = None
     params = v.get_What().get_Param()
     for p in params:
-        print>>o, '<tr>' + VOEventLib.Vutil.htmlParam(g, p) + '</tr>'
+        print>>o, '<tr>' + http_regex.sub('<a href="http:\\1">http:\\1<', VOEventLib.Vutil.htmlParam(g, p)) + '</tr>'
 
     groups = v.get_What().get_Group()
     for g in groups:
@@ -162,3 +161,11 @@ def format_to_string(v):
     content = outfile.getvalue()
     return content
 
+if __name__ == '__main__':
+    from VOEventLib import Vutil as VOEventTools
+
+    example_file = 'examples/SWIFT_BAT_Lightcurve_632888-389.xml'
+    payload = payload = ''.join(open(example_file).readlines())
+    content = format_to_string(VOEventTools.parseString(payload))
+    with open('test_voevent2html.html', "w") as f:
+        f.write(content)
