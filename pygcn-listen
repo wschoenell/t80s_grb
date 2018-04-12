@@ -22,42 +22,41 @@ Example VOEvent listener that saves all incoming VOEvents to disk.
 The default server is "68.169.57.253:8099".
 """
 __author__ = "Leo Singer <leo.singer@ligo.org>"
+import json
 
+import ephem
 import sys
-sys.path.append('/Users/william/workspace/3rd_party/pygcn')
 
-# Command line interface
-DEFAULT_HOST = '68.169.57.253'
-DEFAULT_PORT = 8099
-from optparse import Option, OptionParser
-parser = OptionParser(description=__doc__, usage='%prog [options] [HOSTNAME[:PORT]]')
-opts, args = parser.parse_args()
-if len(args) == 0:
-    host = DEFAULT_HOST
-    port = DEFAULT_PORT
-elif len(args) == 1:
-    host, _, port = args[0].partition(':')
-    if port:
-        try:
-            port = int(port)
-        except ValueError:
-            parser.error('invalid hostname: "{0}"'.format(args[0]))
-    else:
-        port = DEFAULT_PORT
-else:
-    parser.error('too many command line arguments')
+from util.handlers import T80SHandlerClass
+
+with open(sys.argv[1]) as fp:
+    configuration = json.load(fp)
+
+# TODO: remove this. only for tests.
+if not 'packet_types' in configuration:
+    configuration['packet_types'] = range(1000)
+# 'packet_types': [60, 61, 62, 63, 64, 65], 'min_grb_alt': .523598776, 'max_extinction': 100.0}
+
+# TODO: Add extinction check
+# TODO: Add to Zenoss pygcn-list check
+
+from util import handlers as t80s_handlers
+
+# Init Observatory Ephem calculator.
+observatory = ephem.Observer()
+observatory.lon = configuration['observatory.lon']
+observatory.lat = configuration['observatory.lat']
+observatory.elevation = configuration['observatory.elevation']
 
 # Imports
-import gcn
-import gcn.handlers
+import gcn.notice_types
 import logging
 
-#T80S decorators
-import handlers as t80s_handlers
-import gcn.notice_types as n
+# T80S decorators
 
 # Set up logger
 logging.basicConfig(level=logging.INFO)
 
 # Listen for GCN notices (until interrupted or killed)
-gcn.listen(host=host, port=port, handler=t80s_handlers.archive)
+HandlerClass = T80SHandlerClass(configuration, observatory)
+gcn.listen(host=configuration['gcn_host'], port=configuration['gcn_port'], handler=HandlerClass)

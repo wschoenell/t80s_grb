@@ -1,0 +1,20 @@
+{
+  "gcn_host": "68.169.57.253", "gcn_port": 8099,
+  "events_dir": "./events/",
+  "telegram_token": "CHANGEME",
+  "telegram_chat_ids": [
+    99999999
+  ],
+  "smtp_server": "smtp.gmail.com:587",
+  "smtp_user": "CHANGEME@gmail.com",
+  "smtp_password": "CHANGEME",
+  "smtp_usetls": "True",
+  "from_email": "CHANGEME@gmail.com",
+  "to_emails": "CHANGEME@gmail.com",
+  "events_webdir": "http://192.168.20.105/events/",
+  "observatory.lon": "-70:48:20.48",
+  "observatory.lat": "-30:10:04.31",
+  "observatory.elevation": 2187,
+  "min_grb_alt": -100,
+  "max_extinction": 100.0
+}

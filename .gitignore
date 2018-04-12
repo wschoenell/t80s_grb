@@ -57,3 +57,7 @@ pyraf/
 
 #XML events
 events/
+
+# misc
+config_production.json
+*.fits

@@ -11,13 +11,14 @@ import re as re_
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-    ) = range(3)
+(XMLParser_import_none, XMLParser_import_lxml,
+ XMLParser_import_elementtree
+ ) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
     from lxml import etree as etree_
+
     XMLParser_import_library = XMLParser_import_lxml
     if Verbose_import_:
         print("running with lxml.etree")
@@ -25,6 +26,7 @@ except ImportError:
     try:
         # cElementTree from Python 2.5+
         import xml.etree.cElementTree as etree_
+
         XMLParser_import_library = XMLParser_import_elementtree
         if Verbose_import_:
             print("running with cElementTree on Python 2.5+")
@@ -32,6 +34,7 @@ except ImportError:
         try:
             # ElementTree from Python 2.5+
             import xml.etree.ElementTree as etree_
+
             XMLParser_import_library = XMLParser_import_elementtree
             if Verbose_import_:
                 print("running with ElementTree on Python 2.5+")
@@ -39,6 +42,7 @@ except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree_
+
                 XMLParser_import_library = XMLParser_import_elementtree
                 if Verbose_import_:
                     print("running with cElementTree")
@@ -46,20 +50,23 @@ except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree_
+
                     XMLParser_import_library = XMLParser_import_elementtree
                     if Verbose_import_:
                         print("running with ElementTree")
                 except ImportError:
                     raise ImportError("Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+            'parser' not in kwargs):
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         kwargs['parser'] = etree_.ETCompatXMLParser()
     doc = etree_.parse(*args, **kwargs)
     return doc
+
 
 #
 # User methods
@@ -75,15 +82,18 @@ except ImportError, exp:
     class GeneratedsSuper(object):
         def format_string(self, input_data, input_name=''):
             return input_data
+
         def format_integer(self, input_data, input_name=''):
             return '%d' % input_data
+
         def format_float(self, input_data, input_name=''):
             return '%f' % input_data
+
         def format_double(self, input_data, input_name=''):
             return '%e' % input_data
+
         def format_boolean(self, input_data, input_name=''):
             return '%s' % input_data
-
 
 #
 # If you have installed IPython you can uncomment and use the following.
@@ -107,6 +117,7 @@ except ImportError, exp:
 ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 
+
 #
 # Support/utility functions.
 #
@@ -115,6 +126,7 @@ def showIndent(outfile, level):
     for idx in range(level):
         outfile.write('    ')
 
+
 def quote_xml(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
           '%s' % inStr)
@@ -122,6 +134,7 @@ def quote_xml(inStr):
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
+
 
 def quote_attrib(inStr):
     s1 = (isinstance(inStr, basestring) and inStr or
@@ -137,6 +150,7 @@ def quote_attrib(inStr):
     else:
         s1 = '"%s"' % s1
     return s1
+
 
 def quote_python(inStr):
     s1 = inStr
@@ -168,11 +182,12 @@ def get_all_text_(node):
 class GDSParseError(Exception):
     pass
 
+
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
+        msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline,)
     else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+        msg = '%s (element %s)' % (msg, node.tag,)
     raise GDSParseError(msg)
 
 
@@ -191,26 +206,33 @@ class MixedContainer:
     TypeDecimal = 5
     TypeDouble = 6
     TypeBoolean = 7
+
     def __init__(self, category, content_type, name, value):
         self.category = category
         self.content_type = content_type
         self.name = name
         self.value = value
+
     def getCategory(self):
         return self.category
+
     def getContenttype(self, content_type):
         return self.content_type
+
     def getValue(self):
         return self.value
+
     def getName(self):
         return self.name
+
     def export(self, outfile, level, name, namespace):
         if self.category == MixedContainer.CategoryText:
             outfile.write(self.value)
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace,name)
+        else:  # category == MixedContainer.CategoryComplex
+            self.value.export(outfile, level, namespace, name)
+
     def exportSimple(self, outfile, level, name):
         if self.content_type == MixedContainer.TypeString:
             outfile.write('<%s>%s</%s>' % (self.name, self.value, self.name))
@@ -222,19 +244,20 @@ class MixedContainer:
             outfile.write('<%s>%f</%s>' % (self.name, self.value, self.name))
         elif self.content_type == MixedContainer.TypeDouble:
             outfile.write('<%s>%g</%s>' % (self.name, self.value, self.name))
+
     def exportLiteral(self, outfile, level, name):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
             outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
+                          (self.category, self.content_type, self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
             outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
-        else:    # category == MixedContainer.CategoryComplex
+                          (self.category, self.content_type, self.name, self.value))
+        else:  # category == MixedContainer.CategoryComplex
             showIndent(outfile, level)
             outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+                          (self.category, self.content_type, self.name,))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
@@ -245,10 +268,19 @@ class MemberSpec_(object):
         self.name = name
         self.data_type = data_type
         self.container = container
-    def set_name(self, name): self.name = name
-    def get_name(self): return self.name
-    def set_data_type(self, data_type): self.data_type = data_type
-    def get_data_type_chain(self): return self.data_type
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
+
+    def set_data_type(self, data_type):
+        self.data_type = data_type
+
+    def get_data_type_chain(self):
+        return self.data_type
+
     def get_data_type(self):
         if isinstance(self.data_type, list):
             if len(self.data_type) > 0:
@@ -257,13 +289,19 @@ class MemberSpec_(object):
                 return 'xs:string'
         else:
             return self.data_type
-    def set_container(self, container): self.container = container
-    def get_container(self): return self.container
+
+    def set_container(self, container):
+        self.container = container
+
+    def get_container(self):
+        return self.container
+
 
 def _cast(typ, value):
     if typ is None or value is None:
         return value
     return typ(value)
+
 
 #
 # Data representation classes.
@@ -277,7 +315,9 @@ class VOEvent(GeneratedsSuper):
     Why, Citations, Description, and Reference."""
     subclass = None
     superclass = None
-    def __init__(self, version=None, role='observation', ivorn=None, Who=None, What=None, WhereWhen=None, How=None, Why=None, Citations=None, Description=None, Reference=None):
+
+    def __init__(self, version=None, role='observation', ivorn=None, Who=None, What=None, WhereWhen=None, How=None,
+                 Why=None, Citations=None, Description=None, Reference=None):
         self.version = _cast(None, version)
         self.role = _cast(None, role)
         self.ivorn = _cast(None, ivorn)
@@ -289,40 +329,88 @@ class VOEvent(GeneratedsSuper):
         self.Citations = Citations
         self.Description = Description
         self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if VOEvent.subclass:
             return VOEvent.subclass(*args_, **kwargs_)
         else:
             return VOEvent(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Who(self): return self.Who
-    def set_Who(self, Who): self.Who = Who
-    def get_What(self): return self.What
-    def set_What(self, What): self.What = What
-    def get_WhereWhen(self): return self.WhereWhen
-    def set_WhereWhen(self, WhereWhen): self.WhereWhen = WhereWhen
-    def get_How(self): return self.How
-    def set_How(self, How): self.How = How
-    def get_Why(self): return self.Why
-    def set_Why(self, Why): self.Why = Why
-    def get_Citations(self): return self.Citations
-    def set_Citations(self, Citations): self.Citations = Citations
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def get_version(self): return self.version
-    def set_version(self, version): self.version = version
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
+
+    def get_Who(self):
+        return self.Who
+
+    def set_Who(self, Who):
+        self.Who = Who
+
+    def get_What(self):
+        return self.What
+
+    def set_What(self, What):
+        self.What = What
+
+    def get_WhereWhen(self):
+        return self.WhereWhen
+
+    def set_WhereWhen(self, WhereWhen):
+        self.WhereWhen = WhereWhen
+
+    def get_How(self):
+        return self.How
+
+    def set_How(self, How):
+        self.How = How
+
+    def get_Why(self):
+        return self.Why
+
+    def set_Why(self, Why):
+        self.Why = Why
+
+    def get_Citations(self):
+        return self.Citations
+
+    def set_Citations(self, Citations):
+        self.Citations = Citations
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def get_version(self):
+        return self.version
+
+    def set_version(self, version):
+        self.version = version
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
     def validate_roleValues(self, value):
         # Validate type roleValues, a restriction on xs:string.
         pass
-    def get_ivorn(self): return self.ivorn
-    def set_ivorn(self, ivorn): self.ivorn = ivorn
+
+    def get_ivorn(self):
+        return self.ivorn
+
+    def set_ivorn(self, ivorn):
+        self.ivorn = ivorn
+
     def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='VOEvent')
         if self.hasContent_():
             outfile.write('>\n')
@@ -331,11 +419,15 @@ class VOEvent(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='VOEvent'):
-        outfile.write(' version=%s' % (self.format_string(quote_attrib(self.version).encode(ExternalEncoding), input_name='version'), ))
+        outfile.write(' version=%s' % (
+        self.format_string(quote_attrib(self.version).encode(ExternalEncoding), input_name='version'),))
         if self.role is not None:
-            outfile.write(' role=%s' % (quote_attrib(self.role), ))
-        outfile.write(' ivorn=%s' % (self.format_string(quote_attrib(self.ivorn).encode(ExternalEncoding), input_name='ivorn'), ))
+            outfile.write(' role=%s' % (quote_attrib(self.role),))
+        outfile.write(
+            ' ivorn=%s' % (self.format_string(quote_attrib(self.ivorn).encode(ExternalEncoding), input_name='ivorn'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='VOEvent'):
         if self.Who:
             self.Who.export(outfile, level, namespace_, name_='Who')
@@ -351,28 +443,32 @@ class VOEvent(GeneratedsSuper):
             self.Citations.export(outfile, level, namespace_, name_='Citations')
         if self.Description is not None:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(
+                quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
         if self.Reference:
             self.Reference.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Who is not None or
-            self.What is not None or
-            self.WhereWhen is not None or
-            self.How is not None or
-            self.Why is not None or
-            self.Citations is not None or
-            self.Description is not None or
-            self.Reference is not None
-            ):
+                self.Who is not None or
+                self.What is not None or
+                self.WhereWhen is not None or
+                self.How is not None or
+                self.Why is not None or
+                self.Citations is not None or
+                self.Description is not None or
+                self.Reference is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='VOEvent'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.version is not None:
             showIndent(outfile, level)
@@ -383,6 +479,7 @@ class VOEvent(GeneratedsSuper):
         if self.ivorn is not None:
             showIndent(outfile, level)
             outfile.write('ivorn = "%s",\n' % (self.ivorn,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.Who is not None:
             showIndent(outfile, level)
@@ -429,11 +526,13 @@ class VOEvent(GeneratedsSuper):
             self.Reference.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('version')
         if value is not None:
@@ -442,42 +541,45 @@ class VOEvent(GeneratedsSuper):
         value = attrs.get('role')
         if value is not None:
             self.role = value
-            self.validate_roleValues(self.role)    # validate type roleValues
+            self.validate_roleValues(self.role)  # validate type roleValues
         value = attrs.get('ivorn')
         if value is not None:
             self.ivorn = value
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'Who': 
+        if nodeName_ == 'Who':
             obj_ = Who.factory()
             obj_.build(child_)
             self.set_Who(obj_)
-        elif nodeName_ == 'What': 
+        elif nodeName_ == 'What':
             obj_ = What.factory()
             obj_.build(child_)
             self.set_What(obj_)
-        elif nodeName_ == 'WhereWhen': 
+        elif nodeName_ == 'WhereWhen':
             obj_ = WhereWhen.factory()
             obj_.build(child_)
             self.set_WhereWhen(obj_)
-        elif nodeName_ == 'How': 
+        elif nodeName_ == 'How':
             obj_ = How.factory()
             obj_.build(child_)
             self.set_How(obj_)
-        elif nodeName_ == 'Why': 
+        elif nodeName_ == 'Why':
             obj_ = Why.factory()
             obj_.build(child_)
             self.set_Why(obj_)
-        elif nodeName_ == 'Citations': 
+        elif nodeName_ == 'Citations':
             obj_ = Citations.factory()
             obj_.build(child_)
             self.set_Citations(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description = Description_
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.set_Reference(obj_)
+
+
 # end class VOEvent
 
 
@@ -485,31 +587,55 @@ class Who(GeneratedsSuper):
     """Who: Curation Metadata"""
     subclass = None
     superclass = None
+
     def __init__(self, AuthorIVORN=None, Date=None, Description=None, Reference=None, Author=None):
         self.AuthorIVORN = AuthorIVORN
         self.Date = Date
         self.Description = Description
         self.Reference = Reference
         self.Author = Author
+
     def factory(*args_, **kwargs_):
         if Who.subclass:
             return Who.subclass(*args_, **kwargs_)
         else:
             return Who(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_AuthorIVORN(self): return self.AuthorIVORN
-    def set_AuthorIVORN(self, AuthorIVORN): self.AuthorIVORN = AuthorIVORN
-    def get_Date(self): return self.Date
-    def set_Date(self, Date): self.Date = Date
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def get_Author(self): return self.Author
-    def set_Author(self, Author): self.Author = Author
+
+    def get_AuthorIVORN(self):
+        return self.AuthorIVORN
+
+    def set_AuthorIVORN(self, AuthorIVORN):
+        self.AuthorIVORN = AuthorIVORN
+
+    def get_Date(self):
+        return self.Date
+
+    def set_Date(self, Date):
+        self.Date = Date
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def get_Author(self):
+        return self.Author
+
+    def set_Author(self, Author):
+        self.Author = Author
+
     def export(self, outfile, level, namespace_='', name_='Who', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Who')
         if self.hasContent_():
             outfile.write('>\n')
@@ -518,40 +644,50 @@ class Who(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Who'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Who'):
         if self.AuthorIVORN is not None:
             showIndent(outfile, level)
-            outfile.write('<%sAuthorIVORN>%s</%sAuthorIVORN>\n' % (namespace_, self.format_string(quote_xml(self.AuthorIVORN).encode(ExternalEncoding), input_name='AuthorIVORN'), namespace_))
+            outfile.write('<%sAuthorIVORN>%s</%sAuthorIVORN>\n' % (namespace_, self.format_string(
+                quote_xml(self.AuthorIVORN).encode(ExternalEncoding), input_name='AuthorIVORN'), namespace_))
         if self.Date is not None:
             showIndent(outfile, level)
-            outfile.write('<%sDate>%s</%sDate>\n' % (namespace_, self.format_string(quote_xml(self.Date).encode(ExternalEncoding), input_name='Date'), namespace_))
+            outfile.write('<%sDate>%s</%sDate>\n' % (
+            namespace_, self.format_string(quote_xml(self.Date).encode(ExternalEncoding), input_name='Date'),
+            namespace_))
         if self.Description is not None:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(
+                quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
         if self.Reference:
             self.Reference.export(outfile, level, namespace_, name_='Reference')
         if self.Author:
             self.Author.export(outfile, level, namespace_, name_='Author')
+
     def hasContent_(self):
         if (
-            self.AuthorIVORN is not None or
-            self.Date is not None or
-            self.Description is not None or
-            self.Reference is not None or
-            self.Author is not None
-            ):
+                self.AuthorIVORN is not None or
+                self.Date is not None or
+                self.Description is not None or
+                self.Reference is not None or
+                self.Author is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Who'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.AuthorIVORN is not None:
             showIndent(outfile, level)
@@ -574,13 +710,16 @@ class Who(GeneratedsSuper):
             self.Author.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'AuthorIVORN':
             AuthorIVORN_ = child_.text
@@ -591,14 +730,16 @@ class Who(GeneratedsSuper):
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description = Description_
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.set_Reference(obj_)
-        elif nodeName_ == 'Author': 
+        elif nodeName_ == 'Author':
             obj_ = Author.factory()
             obj_.build(child_)
             self.set_Author(obj_)
+
+
 # end class Who
 
 
@@ -609,7 +750,9 @@ class Author(GeneratedsSuper):
     and phone number. Other contributors can also be noted."""
     subclass = None
     superclass = None
-    def __init__(self, title=None, shortName=None, logoURL=None, contactName=None, contactEmail=None, contactPhone=None, contributor=None):
+
+    def __init__(self, title=None, shortName=None, logoURL=None, contactName=None, contactEmail=None, contactPhone=None,
+                 contributor=None):
         if title is None:
             self.title = []
         else:
@@ -638,43 +781,102 @@ class Author(GeneratedsSuper):
             self.contributor = []
         else:
             self.contributor = contributor
+
     def factory(*args_, **kwargs_):
         if Author.subclass:
             return Author.subclass(*args_, **kwargs_)
         else:
             return Author(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def add_title(self, value): self.title.append(value)
-    def insert_title(self, index, value): self.title[index] = value
-    def get_shortName(self): return self.shortName
-    def set_shortName(self, shortName): self.shortName = shortName
-    def add_shortName(self, value): self.shortName.append(value)
-    def insert_shortName(self, index, value): self.shortName[index] = value
-    def get_logoURL(self): return self.logoURL
-    def set_logoURL(self, logoURL): self.logoURL = logoURL
-    def add_logoURL(self, value): self.logoURL.append(value)
-    def insert_logoURL(self, index, value): self.logoURL[index] = value
-    def get_contactName(self): return self.contactName
-    def set_contactName(self, contactName): self.contactName = contactName
-    def add_contactName(self, value): self.contactName.append(value)
-    def insert_contactName(self, index, value): self.contactName[index] = value
-    def get_contactEmail(self): return self.contactEmail
-    def set_contactEmail(self, contactEmail): self.contactEmail = contactEmail
-    def add_contactEmail(self, value): self.contactEmail.append(value)
-    def insert_contactEmail(self, index, value): self.contactEmail[index] = value
-    def get_contactPhone(self): return self.contactPhone
-    def set_contactPhone(self, contactPhone): self.contactPhone = contactPhone
-    def add_contactPhone(self, value): self.contactPhone.append(value)
-    def insert_contactPhone(self, index, value): self.contactPhone[index] = value
-    def get_contributor(self): return self.contributor
-    def set_contributor(self, contributor): self.contributor = contributor
-    def add_contributor(self, value): self.contributor.append(value)
-    def insert_contributor(self, index, value): self.contributor[index] = value
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def add_title(self, value):
+        self.title.append(value)
+
+    def insert_title(self, index, value):
+        self.title[index] = value
+
+    def get_shortName(self):
+        return self.shortName
+
+    def set_shortName(self, shortName):
+        self.shortName = shortName
+
+    def add_shortName(self, value):
+        self.shortName.append(value)
+
+    def insert_shortName(self, index, value):
+        self.shortName[index] = value
+
+    def get_logoURL(self):
+        return self.logoURL
+
+    def set_logoURL(self, logoURL):
+        self.logoURL = logoURL
+
+    def add_logoURL(self, value):
+        self.logoURL.append(value)
+
+    def insert_logoURL(self, index, value):
+        self.logoURL[index] = value
+
+    def get_contactName(self):
+        return self.contactName
+
+    def set_contactName(self, contactName):
+        self.contactName = contactName
+
+    def add_contactName(self, value):
+        self.contactName.append(value)
+
+    def insert_contactName(self, index, value):
+        self.contactName[index] = value
+
+    def get_contactEmail(self):
+        return self.contactEmail
+
+    def set_contactEmail(self, contactEmail):
+        self.contactEmail = contactEmail
+
+    def add_contactEmail(self, value):
+        self.contactEmail.append(value)
+
+    def insert_contactEmail(self, index, value):
+        self.contactEmail[index] = value
+
+    def get_contactPhone(self):
+        return self.contactPhone
+
+    def set_contactPhone(self, contactPhone):
+        self.contactPhone = contactPhone
+
+    def add_contactPhone(self, value):
+        self.contactPhone.append(value)
+
+    def insert_contactPhone(self, index, value):
+        self.contactPhone[index] = value
+
+    def get_contributor(self):
+        return self.contributor
+
+    def set_contributor(self, contributor):
+        self.contributor = contributor
+
+    def add_contributor(self, value):
+        self.contributor.append(value)
+
+    def insert_contributor(self, index, value):
+        self.contributor[index] = value
+
     def export(self, outfile, level, namespace_='', name_='Author', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Author')
         if self.hasContent_():
             outfile.write('>\n')
@@ -683,50 +885,67 @@ class Author(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Author'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Author'):
         for title_ in self.title:
             showIndent(outfile, level)
-            outfile.write('<%stitle>%s</%stitle>\n' % (namespace_, self.format_string(quote_xml(title_).encode(ExternalEncoding), input_name='title'), namespace_))
+            outfile.write('<%stitle>%s</%stitle>\n' % (
+            namespace_, self.format_string(quote_xml(title_).encode(ExternalEncoding), input_name='title'), namespace_))
         for shortName_ in self.shortName:
             showIndent(outfile, level)
-            outfile.write('<%sshortName>%s</%sshortName>\n' % (namespace_, self.format_string(quote_xml(shortName_).encode(ExternalEncoding), input_name='shortName'), namespace_))
+            outfile.write('<%sshortName>%s</%sshortName>\n' % (
+            namespace_, self.format_string(quote_xml(shortName_).encode(ExternalEncoding), input_name='shortName'),
+            namespace_))
         for logoURL_ in self.logoURL:
             showIndent(outfile, level)
-            outfile.write('<%slogoURL>%s</%slogoURL>\n' % (namespace_, self.format_string(quote_xml(logoURL_).encode(ExternalEncoding), input_name='logoURL'), namespace_))
+            outfile.write('<%slogoURL>%s</%slogoURL>\n' % (
+            namespace_, self.format_string(quote_xml(logoURL_).encode(ExternalEncoding), input_name='logoURL'),
+            namespace_))
         for contactName_ in self.contactName:
             showIndent(outfile, level)
-            outfile.write('<%scontactName>%s</%scontactName>\n' % (namespace_, self.format_string(quote_xml(contactName_).encode(ExternalEncoding), input_name='contactName'), namespace_))
+            outfile.write('<%scontactName>%s</%scontactName>\n' % (
+            namespace_, self.format_string(quote_xml(contactName_).encode(ExternalEncoding), input_name='contactName'),
+            namespace_))
         for contactEmail_ in self.contactEmail:
             showIndent(outfile, level)
-            outfile.write('<%scontactEmail>%s</%scontactEmail>\n' % (namespace_, self.format_string(quote_xml(contactEmail_).encode(ExternalEncoding), input_name='contactEmail'), namespace_))
+            outfile.write('<%scontactEmail>%s</%scontactEmail>\n' % (namespace_, self.format_string(
+                quote_xml(contactEmail_).encode(ExternalEncoding), input_name='contactEmail'), namespace_))
         for contactPhone_ in self.contactPhone:
             showIndent(outfile, level)
-            outfile.write('<%scontactPhone>%s</%scontactPhone>\n' % (namespace_, self.format_string(quote_xml(contactPhone_).encode(ExternalEncoding), input_name='contactPhone'), namespace_))
+            outfile.write('<%scontactPhone>%s</%scontactPhone>\n' % (namespace_, self.format_string(
+                quote_xml(contactPhone_).encode(ExternalEncoding), input_name='contactPhone'), namespace_))
         for contributor_ in self.contributor:
             showIndent(outfile, level)
-            outfile.write('<%scontributor>%s</%scontributor>\n' % (namespace_, self.format_string(quote_xml(contributor_).encode(ExternalEncoding), input_name='contributor'), namespace_))
+            outfile.write('<%scontributor>%s</%scontributor>\n' % (
+            namespace_, self.format_string(quote_xml(contributor_).encode(ExternalEncoding), input_name='contributor'),
+            namespace_))
+
     def hasContent_(self):
         if (
-            self.title or
-            self.shortName or
-            self.logoURL or
-            self.contactName or
-            self.contactEmail or
-            self.contactPhone or
-            self.contributor
-            ):
+                self.title or
+                self.shortName or
+                self.logoURL or
+                self.contactName or
+                self.contactEmail or
+                self.contactPhone or
+                self.contributor
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Author'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('title=[\n')
@@ -791,13 +1010,16 @@ class Author(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'title':
             title_ = child_.text
@@ -820,6 +1042,8 @@ class Author(GeneratedsSuper):
         elif nodeName_ == 'contributor':
             contributor_ = child_.text
             self.contributor.append(contributor_)
+
+
 # end class Author
 
 
@@ -831,6 +1055,7 @@ class What(GeneratedsSuper):
     with most VOEvent elements."""
     subclass = None
     superclass = None
+
     def __init__(self, Param=None, Group=None, Table=None, Description=None, Reference=None):
         if Param is None:
             self.Param = []
@@ -852,35 +1077,78 @@ class What(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if What.subclass:
             return What.subclass(*args_, **kwargs_)
         else:
             return What(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Param(self): return self.Param
-    def set_Param(self, Param): self.Param = Param
-    def add_Param(self, value): self.Param.append(value)
-    def insert_Param(self, index, value): self.Param[index] = value
-    def get_Group(self): return self.Group
-    def set_Group(self, Group): self.Group = Group
-    def add_Group(self, value): self.Group.append(value)
-    def insert_Group(self, index, value): self.Group[index] = value
-    def get_Table(self): return self.Table
-    def set_Table(self, Table): self.Table = Table
-    def add_Table(self, value): self.Table.append(value)
-    def insert_Table(self, index, value): self.Table[index] = value
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
+
+    def get_Param(self):
+        return self.Param
+
+    def set_Param(self, Param):
+        self.Param = Param
+
+    def add_Param(self, value):
+        self.Param.append(value)
+
+    def insert_Param(self, index, value):
+        self.Param[index] = value
+
+    def get_Group(self):
+        return self.Group
+
+    def set_Group(self, Group):
+        self.Group = Group
+
+    def add_Group(self, value):
+        self.Group.append(value)
+
+    def insert_Group(self, index, value):
+        self.Group[index] = value
+
+    def get_Table(self):
+        return self.Table
+
+    def set_Table(self, Table):
+        self.Table = Table
+
+    def add_Table(self, value):
+        self.Table.append(value)
+
+    def insert_Table(self, index, value):
+        self.Table[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
     def export(self, outfile, level, namespace_='', name_='What', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='What')
         if self.hasContent_():
             outfile.write('>\n')
@@ -889,8 +1157,10 @@ class What(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='What'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='What'):
         for Param_ in self.Param:
             Param_.export(outfile, level, namespace_, name_='Param')
@@ -900,27 +1170,33 @@ class What(GeneratedsSuper):
             Table_.export(outfile, level, namespace_, name_='Table')
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Param or
-            self.Group or
-            self.Table or
-            self.Description or
-            self.Reference
-            ):
+                self.Param or
+                self.Group or
+                self.Table or
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='What'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Param=[\n')
@@ -979,33 +1255,38 @@ class What(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'Param': 
+        if nodeName_ == 'Param':
             obj_ = Param.factory()
             obj_.build(child_)
             self.Param.append(obj_)
-        elif nodeName_ == 'Group': 
+        elif nodeName_ == 'Group':
             obj_ = Group.factory()
             obj_.build(child_)
             self.Group.append(obj_)
-        elif nodeName_ == 'Table': 
+        elif nodeName_ == 'Table':
             obj_ = Table.factory()
             obj_.build(child_)
             self.Table.append(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class What
 
 
@@ -1014,7 +1295,9 @@ class Param(GeneratedsSuper):
     and may have Description and Reference."""
     subclass = None
     superclass = None
-    def __init__(self, name=None, dataType='string', value=None, utype=None, ucd=None, unit=None, Description=None, Reference=None, Value=None):
+
+    def __init__(self, name=None, dataType='string', value=None, utype=None, ucd=None, unit=None, Description=None,
+                 Reference=None, Value=None):
         self.name = _cast(None, name)
         self.dataType = _cast(None, dataType)
         self.value = _cast(None, value)
@@ -1030,40 +1313,88 @@ class Param(GeneratedsSuper):
         else:
             self.Reference = Reference
         self.Value = Value
+
     def factory(*args_, **kwargs_):
         if Param.subclass:
             return Param.subclass(*args_, **kwargs_)
         else:
             return Param(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_Value(self): return self.Value
-    def set_Value(self, Value): self.Value = Value
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_dataType(self): return self.dataType
-    def set_dataType(self, dataType): self.dataType = dataType
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_Value(self):
+        return self.Value
+
+    def set_Value(self, Value):
+        self.Value = Value
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_dataType(self):
+        return self.dataType
+
+    def set_dataType(self, dataType):
+        self.dataType = dataType
+
     def validate_dataType(self, value):
         # Validate type dataType, a restriction on xs:string.
         pass
-    def get_value(self): return self.value
-    def set_value(self, value): self.value = value
-    def get_utype(self): return self.utype
-    def set_utype(self, utype): self.utype = utype
-    def get_ucd(self): return self.ucd
-    def set_ucd(self, ucd): self.ucd = ucd
-    def get_unit(self): return self.unit
-    def set_unit(self, unit): self.unit = unit
+
+    def get_value(self):
+        return self.value
+
+    def set_value(self, value):
+        self.value = value
+
+    def get_utype(self):
+        return self.utype
+
+    def set_utype(self, utype):
+        self.utype = utype
+
+    def get_ucd(self):
+        return self.ucd
+
+    def set_ucd(self, ucd):
+        self.ucd = ucd
+
+    def get_unit(self):
+        return self.unit
+
+    def set_unit(self, unit):
+        self.unit = unit
+
     def export(self, outfile, level, namespace_='', name_='Param', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Param')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1072,42 +1403,56 @@ class Param(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Param'):
         if self.name is not None:
-            outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(
+                ' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'),))
         if self.dataType is not None:
-            outfile.write(' dataType=%s' % (quote_attrib(self.dataType), ))
+            outfile.write(' dataType=%s' % (quote_attrib(self.dataType),))
         if self.value is not None:
-            outfile.write(' value=%s' % (self.format_string(quote_attrib(self.value).encode(ExternalEncoding), input_name='value'), ))
+            outfile.write(' value=%s' % (
+            self.format_string(quote_attrib(self.value).encode(ExternalEncoding), input_name='value'),))
         if self.utype is not None:
-            outfile.write(' utype=%s' % (self.format_string(quote_attrib(self.utype).encode(ExternalEncoding), input_name='utype'), ))
+            outfile.write(' utype=%s' % (
+            self.format_string(quote_attrib(self.utype).encode(ExternalEncoding), input_name='utype'),))
         if self.ucd is not None:
-            outfile.write(' ucd=%s' % (self.format_string(quote_attrib(self.ucd).encode(ExternalEncoding), input_name='ucd'), ))
+            outfile.write(
+                ' ucd=%s' % (self.format_string(quote_attrib(self.ucd).encode(ExternalEncoding), input_name='ucd'),))
         if self.unit is not None:
-            outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
+            outfile.write(
+                ' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Param'):
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
         if self.Value is not None:
             showIndent(outfile, level)
-            outfile.write('<%sValue>%s</%sValue>\n' % (namespace_, self.format_string(quote_xml(self.Value).encode(ExternalEncoding), input_name='Value'), namespace_))
+            outfile.write('<%sValue>%s</%sValue>\n' % (
+            namespace_, self.format_string(quote_xml(self.Value).encode(ExternalEncoding), input_name='Value'),
+            namespace_))
+
     def hasContent_(self):
         if (
-            self.Description or
-            self.Reference or
-            self.Value is not None
-            ):
+                self.Description or
+                self.Reference or
+                self.Value is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Param'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.name is not None:
             showIndent(outfile, level)
@@ -1127,6 +1472,7 @@ class Param(GeneratedsSuper):
         if self.unit is not None:
             showIndent(outfile, level)
             outfile.write('unit = "%s",\n' % (self.unit,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Description=[\n')
@@ -1152,11 +1498,13 @@ class Param(GeneratedsSuper):
         if self.Value is not None:
             showIndent(outfile, level)
             outfile.write('Value=%s,\n' % quote_python(self.Value).encode(ExternalEncoding))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('name')
         if value is not None:
@@ -1164,7 +1512,7 @@ class Param(GeneratedsSuper):
         value = attrs.get('dataType')
         if value is not None:
             self.dataType = value
-            self.validate_dataType(self.dataType)    # validate type dataType
+            self.validate_dataType(self.dataType)  # validate type dataType
         value = attrs.get('value')
         if value is not None:
             self.value = value
@@ -1177,17 +1525,20 @@ class Param(GeneratedsSuper):
         value = attrs.get('unit')
         if value is not None:
             self.unit = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
         elif nodeName_ == 'Value':
             Value_ = child_.text
             self.Value = Value_
+
+
 # end class Param
 
 
@@ -1196,6 +1547,7 @@ class Group(GeneratedsSuper):
     and type attributes."""
     subclass = None
     superclass = None
+
     def __init__(self, type_=None, name=None, Param=None, Description=None, Reference=None):
         self.type_ = _cast(None, type_)
         self.name = _cast(None, name)
@@ -1211,31 +1563,66 @@ class Group(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if Group.subclass:
             return Group.subclass(*args_, **kwargs_)
         else:
             return Group(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Param(self): return self.Param
-    def set_Param(self, Param): self.Param = Param
-    def add_Param(self, value): self.Param.append(value)
-    def insert_Param(self, index, value): self.Param[index] = value
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
+
+    def get_Param(self):
+        return self.Param
+
+    def set_Param(self, Param):
+        self.Param = Param
+
+    def add_Param(self, value):
+        self.Param.append(value)
+
+    def insert_Param(self, index, value):
+        self.Param[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
     def export(self, outfile, level, namespace_='', name_='Group', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Group')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1244,33 +1631,42 @@ class Group(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Group'):
         if self.type_ is not None:
-            outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
+            outfile.write(' type=%s' % (
+            self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'),))
         if self.name is not None:
-            outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(
+                ' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Group'):
         for Param_ in self.Param:
             Param_.export(outfile, level, namespace_, name_='Param')
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Param or
-            self.Description or
-            self.Reference
-            ):
+                self.Param or
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Group'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.type_ is not None:
             showIndent(outfile, level)
@@ -1278,6 +1674,7 @@ class Group(GeneratedsSuper):
         if self.name is not None:
             showIndent(outfile, level)
             outfile.write('name = "%s",\n' % (self.name,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Param=[\n')
@@ -1312,11 +1709,13 @@ class Group(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('type')
         if value is not None:
@@ -1324,18 +1723,21 @@ class Group(GeneratedsSuper):
         value = attrs.get('name')
         if value is not None:
             self.name = value
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'Param': 
+        if nodeName_ == 'Param':
             obj_ = Param.factory()
             obj_.build(child_)
             self.Param.append(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class Group
 
 
@@ -1345,6 +1747,7 @@ class Table(GeneratedsSuper):
     and TD for value of a table cell."""
     subclass = None
     superclass = None
+
     def __init__(self, type_=None, name=None, Description=None, Reference=None, Param=None, Field=None, Data=None):
         self.type_ = _cast(None, type_)
         self.name = _cast(None, name)
@@ -1365,37 +1768,84 @@ class Table(GeneratedsSuper):
         else:
             self.Field = Field
         self.Data = Data
+
     def factory(*args_, **kwargs_):
         if Table.subclass:
             return Table.subclass(*args_, **kwargs_)
         else:
             return Table(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_Param(self): return self.Param
-    def set_Param(self, Param): self.Param = Param
-    def add_Param(self, value): self.Param.append(value)
-    def insert_Param(self, index, value): self.Param[index] = value
-    def get_Field(self): return self.Field
-    def set_Field(self, Field): self.Field = Field
-    def add_Field(self, value): self.Field.append(value)
-    def insert_Field(self, index, value): self.Field[index] = value
-    def get_Data(self): return self.Data
-    def set_Data(self, Data): self.Data = Data
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_Param(self):
+        return self.Param
+
+    def set_Param(self, Param):
+        self.Param = Param
+
+    def add_Param(self, value):
+        self.Param.append(value)
+
+    def insert_Param(self, index, value):
+        self.Param[index] = value
+
+    def get_Field(self):
+        return self.Field
+
+    def set_Field(self, Field):
+        self.Field = Field
+
+    def add_Field(self, value):
+        self.Field.append(value)
+
+    def insert_Field(self, index, value):
+        self.Field[index] = value
+
+    def get_Data(self):
+        return self.Data
+
+    def set_Data(self, Data):
+        self.Data = Data
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
     def export(self, outfile, level, namespace_='', name_='Table', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Table')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1404,15 +1854,21 @@ class Table(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Table'):
         if self.type_ is not None:
-            outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
+            outfile.write(' type=%s' % (
+            self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'),))
         if self.name is not None:
-            outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(
+                ' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Table'):
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
         for Param_ in self.Param:
@@ -1421,22 +1877,25 @@ class Table(GeneratedsSuper):
             Field_.export(outfile, level, namespace_, name_='Field')
         if self.Data:
             self.Data.export(outfile, level, namespace_, name_='Data', )
+
     def hasContent_(self):
         if (
-            self.Description or
-            self.Reference or
-            self.Param or
-            self.Field or
-            self.Data is not None
-            ):
+                self.Description or
+                self.Reference or
+                self.Param or
+                self.Field or
+                self.Data is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Table'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.type_ is not None:
             showIndent(outfile, level)
@@ -1444,6 +1903,7 @@ class Table(GeneratedsSuper):
         if self.name is not None:
             showIndent(outfile, level)
             outfile.write('name = "%s",\n' % (self.name,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Description=[\n')
@@ -1496,11 +1956,13 @@ class Table(GeneratedsSuper):
             self.Data.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('type')
         if value is not None:
@@ -1508,32 +1970,36 @@ class Table(GeneratedsSuper):
         value = attrs.get('name')
         if value is not None:
             self.name = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
-        elif nodeName_ == 'Param': 
+        elif nodeName_ == 'Param':
             obj_ = Param.factory()
             obj_.build(child_)
             self.Param.append(obj_)
-        elif nodeName_ == 'Field': 
+        elif nodeName_ == 'Field':
             obj_ = Field.factory()
             obj_.build(child_)
             self.Field.append(obj_)
-        elif nodeName_ == 'Data': 
+        elif nodeName_ == 'Data':
             obj_ = Data.factory()
             obj_.build(child_)
             self.set_Data(obj_)
+
+
 # end class Table
 
 
 class Field(GeneratedsSuper):
     subclass = None
     superclass = None
+
     def __init__(self, dataType='string', utype=None, ucd=None, name=None, unit=None, Description=None, Reference=None):
         self.dataType = _cast(None, dataType)
         self.utype = _cast(None, utype)
@@ -1548,36 +2014,76 @@ class Field(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if Field.subclass:
             return Field.subclass(*args_, **kwargs_)
         else:
             return Field(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_dataType(self): return self.dataType
-    def set_dataType(self, dataType): self.dataType = dataType
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_dataType(self):
+        return self.dataType
+
+    def set_dataType(self, dataType):
+        self.dataType = dataType
+
     def validate_dataType(self, value):
         # Validate type dataType, a restriction on xs:string.
         pass
-    def get_utype(self): return self.utype
-    def set_utype(self, utype): self.utype = utype
-    def get_ucd(self): return self.ucd
-    def set_ucd(self, ucd): self.ucd = ucd
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_unit(self): return self.unit
-    def set_unit(self, unit): self.unit = unit
+
+    def get_utype(self):
+        return self.utype
+
+    def set_utype(self, utype):
+        self.utype = utype
+
+    def get_ucd(self):
+        return self.ucd
+
+    def set_ucd(self, ucd):
+        self.ucd = ucd
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_unit(self):
+        return self.unit
+
+    def set_unit(self, unit):
+        self.unit = unit
+
     def export(self, outfile, level, namespace_='', name_='Field', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Field')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1586,36 +2092,47 @@ class Field(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Field'):
         if self.dataType is not None:
-            outfile.write(' dataType=%s' % (quote_attrib(self.dataType), ))
+            outfile.write(' dataType=%s' % (quote_attrib(self.dataType),))
         if self.utype is not None:
-            outfile.write(' utype=%s' % (self.format_string(quote_attrib(self.utype).encode(ExternalEncoding), input_name='utype'), ))
+            outfile.write(' utype=%s' % (
+            self.format_string(quote_attrib(self.utype).encode(ExternalEncoding), input_name='utype'),))
         if self.ucd is not None:
-            outfile.write(' ucd=%s' % (self.format_string(quote_attrib(self.ucd).encode(ExternalEncoding), input_name='ucd'), ))
+            outfile.write(
+                ' ucd=%s' % (self.format_string(quote_attrib(self.ucd).encode(ExternalEncoding), input_name='ucd'),))
         if self.name is not None:
-            outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(
+                ' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'),))
         if self.unit is not None:
-            outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
+            outfile.write(
+                ' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Field'):
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Description or
-            self.Reference
-            ):
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Field'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.dataType is not None:
             showIndent(outfile, level)
@@ -1632,6 +2149,7 @@ class Field(GeneratedsSuper):
         if self.unit is not None:
             showIndent(outfile, level)
             outfile.write('unit = "%s",\n' % (self.unit,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Description=[\n')
@@ -1654,16 +2172,18 @@ class Field(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('dataType')
         if value is not None:
             self.dataType = value
-            self.validate_dataType(self.dataType)    # validate type dataType
+            self.validate_dataType(self.dataType)  # validate type dataType
         value = attrs.get('utype')
         if value is not None:
             self.utype = value
@@ -1676,38 +2196,53 @@ class Field(GeneratedsSuper):
         value = attrs.get('unit')
         if value is not None:
             self.unit = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class Field
 
 
 class Data(GeneratedsSuper):
     subclass = None
     superclass = None
+
     def __init__(self, TR=None):
         if TR is None:
             self.TR = []
         else:
             self.TR = TR
+
     def factory(*args_, **kwargs_):
         if Data.subclass:
             return Data.subclass(*args_, **kwargs_)
         else:
             return Data(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TR(self): return self.TR
-    def set_TR(self, TR): self.TR = TR
-    def add_TR(self, value): self.TR.append(value)
-    def insert_TR(self, index, value): self.TR[index] = value
+
+    def get_TR(self):
+        return self.TR
+
+    def set_TR(self, TR):
+        self.TR = TR
+
+    def add_TR(self, value):
+        self.TR.append(value)
+
+    def insert_TR(self, index, value):
+        self.TR[index] = value
+
     def export(self, outfile, level, namespace_='', name_='Data', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Data')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1716,25 +2251,31 @@ class Data(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Data'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Data'):
         for TR_ in self.TR:
             TR_.export(outfile, level, namespace_, name_='TR')
+
     def hasContent_(self):
         if (
-            self.TR
-            ):
+                self.TR
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Data'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('TR=[\n')
@@ -1748,42 +2289,59 @@ class Data(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'TR': 
+        if nodeName_ == 'TR':
             obj_ = TR.factory()
             obj_.build(child_)
             self.TR.append(obj_)
+
+
 # end class Data
 
 
 class TR(GeneratedsSuper):
     subclass = None
     superclass = None
+
     def __init__(self, TD=None):
         if TD is None:
             self.TD = []
         else:
             self.TD = TD
+
     def factory(*args_, **kwargs_):
         if TR.subclass:
             return TR.subclass(*args_, **kwargs_)
         else:
             return TR(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TD(self): return self.TD
-    def set_TD(self, TD): self.TD = TD
-    def add_TD(self, value): self.TD.append(value)
-    def insert_TD(self, index, value): self.TD[index] = value
+
+    def get_TD(self):
+        return self.TD
+
+    def set_TD(self, TD):
+        self.TD = TD
+
+    def add_TD(self, value):
+        self.TD.append(value)
+
+    def insert_TD(self, index, value):
+        self.TD[index] = value
+
     def export(self, outfile, level, namespace_='', name_='TR', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='TR')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1792,26 +2350,33 @@ class TR(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TR'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='TR'):
         for TD_ in self.TD:
             showIndent(outfile, level)
-            outfile.write('<%sTD>%s</%sTD>\n' % (namespace_, self.format_string(quote_xml(TD_).encode(ExternalEncoding), input_name='TD'), namespace_))
+            outfile.write('<%sTD>%s</%sTD>\n' % (
+            namespace_, self.format_string(quote_xml(TD_).encode(ExternalEncoding), input_name='TD'), namespace_))
+
     def hasContent_(self):
         if (
-            self.TD
-            ):
+                self.TD
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='TR'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('TD=[\n')
@@ -1822,17 +2387,22 @@ class TR(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'TD':
             TD_ = child_.text
             self.TD.append(TD_)
+
+
 # end class TR
 
 
@@ -1842,6 +2412,7 @@ class WhereWhen(GeneratedsSuper):
     coord_system, time, timeError, longitude, latitude, posError."""
     subclass = None
     superclass = None
+
     def __init__(self, id=None, ObsDataLocation=None, Description=None, Reference=None):
         self.id = _cast(None, id)
         self.ObsDataLocation = ObsDataLocation
@@ -1853,27 +2424,54 @@ class WhereWhen(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if WhereWhen.subclass:
             return WhereWhen.subclass(*args_, **kwargs_)
         else:
             return WhereWhen(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_ObsDataLocation(self): return self.ObsDataLocation
-    def set_ObsDataLocation(self, ObsDataLocation): self.ObsDataLocation = ObsDataLocation
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
+
+    def get_ObsDataLocation(self):
+        return self.ObsDataLocation
+
+    def set_ObsDataLocation(self, ObsDataLocation):
+        self.ObsDataLocation = ObsDataLocation
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_id(self):
+        return self.id
+
+    def set_id(self, id):
+        self.id = id
+
     def export(self, outfile, level, namespace_='', name_='WhereWhen', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='WhereWhen')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1882,35 +2480,44 @@ class WhereWhen(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='WhereWhen'):
         if self.id is not None:
-            outfile.write(' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
+            outfile.write(
+                ' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='WhereWhen'):
         if self.ObsDataLocation:
             self.ObsDataLocation.export(outfile, level, namespace_, name_='ObsDataLocation', )
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.ObsDataLocation is not None or
-            self.Description or
-            self.Reference
-            ):
+                self.ObsDataLocation is not None or
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='WhereWhen'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.id is not None:
             showIndent(outfile, level)
             outfile.write('id = "%s",\n' % (self.id,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.ObsDataLocation is not None:
             showIndent(outfile, level)
@@ -1939,27 +2546,32 @@ class WhereWhen(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('id')
         if value is not None:
             self.id = value
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'ObsDataLocation': 
+        if nodeName_ == 'ObsDataLocation':
             obj_ = ObsDataLocation.factory()
             obj_.build(child_)
             self.set_ObsDataLocation(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class WhereWhen
 
 
@@ -1967,22 +2579,34 @@ class ObsDataLocation(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, ObservatoryLocation=None, ObservationLocation=None):
         self.ObservatoryLocation = ObservatoryLocation
         self.ObservationLocation = ObservationLocation
+
     def factory(*args_, **kwargs_):
         if ObsDataLocation.subclass:
             return ObsDataLocation.subclass(*args_, **kwargs_)
         else:
             return ObsDataLocation(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_ObservatoryLocation(self): return self.ObservatoryLocation
-    def set_ObservatoryLocation(self, ObservatoryLocation): self.ObservatoryLocation = ObservatoryLocation
-    def get_ObservationLocation(self): return self.ObservationLocation
-    def set_ObservationLocation(self, ObservationLocation): self.ObservationLocation = ObservationLocation
+
+    def get_ObservatoryLocation(self):
+        return self.ObservatoryLocation
+
+    def set_ObservatoryLocation(self, ObservatoryLocation):
+        self.ObservatoryLocation = ObservatoryLocation
+
+    def get_ObservationLocation(self):
+        return self.ObservationLocation
+
+    def set_ObservationLocation(self, ObservationLocation):
+        self.ObservationLocation = ObservationLocation
+
     def export(self, outfile, level, namespace_='', name_='ObsDataLocation', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='ObsDataLocation')
         if self.hasContent_():
             outfile.write('>\n')
@@ -1991,28 +2615,34 @@ class ObsDataLocation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObsDataLocation'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='ObsDataLocation'):
         if self.ObservatoryLocation:
             self.ObservatoryLocation.export(outfile, level, namespace_, name_='ObservatoryLocation', )
         if self.ObservationLocation:
             self.ObservationLocation.export(outfile, level, namespace_, name_='ObservationLocation', )
+
     def hasContent_(self):
         if (
-            self.ObservatoryLocation is not None or
-            self.ObservationLocation is not None
-            ):
+                self.ObservatoryLocation is not None or
+                self.ObservationLocation is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='ObsDataLocation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.ObservatoryLocation is not None:
             showIndent(outfile, level)
@@ -2026,22 +2656,27 @@ class ObsDataLocation(GeneratedsSuper):
             self.ObservationLocation.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'ObservatoryLocation': 
+        if nodeName_ == 'ObservatoryLocation':
             obj_ = ObservatoryLocation.factory()
             obj_.build(child_)
             self.set_ObservatoryLocation(obj_)
-        elif nodeName_ == 'ObservationLocation': 
+        elif nodeName_ == 'ObservationLocation':
             obj_ = ObservationLocation.factory()
             obj_.build(child_)
             self.set_ObservationLocation(obj_)
+
+
 # end class ObsDataLocation
 
 
@@ -2049,22 +2684,34 @@ class ObservationLocation(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, AstroCoordSystem=None, AstroCoords=None):
         self.AstroCoordSystem = AstroCoordSystem
         self.AstroCoords = AstroCoords
+
     def factory(*args_, **kwargs_):
         if ObservationLocation.subclass:
             return ObservationLocation.subclass(*args_, **kwargs_)
         else:
             return ObservationLocation(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_AstroCoordSystem(self): return self.AstroCoordSystem
-    def set_AstroCoordSystem(self, AstroCoordSystem): self.AstroCoordSystem = AstroCoordSystem
-    def get_AstroCoords(self): return self.AstroCoords
-    def set_AstroCoords(self, AstroCoords): self.AstroCoords = AstroCoords
+
+    def get_AstroCoordSystem(self):
+        return self.AstroCoordSystem
+
+    def set_AstroCoordSystem(self, AstroCoordSystem):
+        self.AstroCoordSystem = AstroCoordSystem
+
+    def get_AstroCoords(self):
+        return self.AstroCoords
+
+    def set_AstroCoords(self, AstroCoords):
+        self.AstroCoords = AstroCoords
+
     def export(self, outfile, level, namespace_='', name_='ObservationLocation', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='ObservationLocation')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2073,28 +2720,34 @@ class ObservationLocation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObservationLocation'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='ObservationLocation'):
         if self.AstroCoordSystem:
             self.AstroCoordSystem.export(outfile, level, namespace_, name_='AstroCoordSystem', )
         if self.AstroCoords:
             self.AstroCoords.export(outfile, level, namespace_, name_='AstroCoords', )
+
     def hasContent_(self):
         if (
-            self.AstroCoordSystem is not None or
-            self.AstroCoords is not None
-            ):
+                self.AstroCoordSystem is not None or
+                self.AstroCoords is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='ObservationLocation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.AstroCoordSystem is not None:
             showIndent(outfile, level)
@@ -2108,22 +2761,27 @@ class ObservationLocation(GeneratedsSuper):
             self.AstroCoords.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'AstroCoordSystem': 
+        if nodeName_ == 'AstroCoordSystem':
             obj_ = AstroCoordSystem.factory()
             obj_.build(child_)
             self.set_AstroCoordSystem(obj_)
-        elif nodeName_ == 'AstroCoords': 
+        elif nodeName_ == 'AstroCoords':
             obj_ = AstroCoords.factory()
             obj_.build(child_)
             self.set_AstroCoords(obj_)
+
+
 # end class ObservationLocation
 
 
@@ -2131,25 +2789,38 @@ class AstroCoordSystem(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, id=None, valueOf_=None):
         self.id = _cast(None, id)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if AstroCoordSystem.subclass:
             return AstroCoordSystem.subclass(*args_, **kwargs_)
         else:
             return AstroCoordSystem(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
+
+    def get_id(self):
+        return self.id
+
+    def set_id(self, id):
+        self.id = id
+
     def validate_idValues(self, value):
         # Validate type idValues, a restriction on xs:string.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
     def export(self, outfile, level, namespace_='', name_='AstroCoordSystem', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='AstroCoordSystem')
         if self.hasContent_():
             outfile.write('>')
@@ -2158,43 +2829,54 @@ class AstroCoordSystem(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoordSystem'):
         if self.id is not None:
-            outfile.write(' id=%s' % (quote_attrib(self.id), ))
+            outfile.write(' id=%s' % (quote_attrib(self.id),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='AstroCoordSystem'):
         pass
+
     def hasContent_(self):
         if (
-            self.valueOf_
-            ):
+                self.valueOf_
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='AstroCoordSystem'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.id is not None:
             showIndent(outfile, level)
             outfile.write('id = "%s",\n' % (self.id,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('id')
         if value is not None:
             self.id = value
-            self.validate_idValues(self.id)    # validate type idValues
+            self.validate_idValues(self.id)  # validate type idValues
+
     def buildChildren(self, child_, nodeName_):
         pass
+
+
 # end class AstroCoordSystem
 
 
@@ -2202,31 +2884,52 @@ class AstroCoords(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, coord_system_id=None, Time=None, Position2D=None, Position3D=None):
         self.coord_system_id = _cast(None, coord_system_id)
         self.Time = Time
         self.Position2D = Position2D
         self.Position3D = Position3D
+
     def factory(*args_, **kwargs_):
         if AstroCoords.subclass:
             return AstroCoords.subclass(*args_, **kwargs_)
         else:
             return AstroCoords(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Time(self): return self.Time
-    def set_Time(self, Time): self.Time = Time
-    def get_Position2D(self): return self.Position2D
-    def set_Position2D(self, Position2D): self.Position2D = Position2D
-    def get_Position3D(self): return self.Position3D
-    def set_Position3D(self, Position3D): self.Position3D = Position3D
-    def get_coord_system_id(self): return self.coord_system_id
-    def set_coord_system_id(self, coord_system_id): self.coord_system_id = coord_system_id
+
+    def get_Time(self):
+        return self.Time
+
+    def set_Time(self, Time):
+        self.Time = Time
+
+    def get_Position2D(self):
+        return self.Position2D
+
+    def set_Position2D(self, Position2D):
+        self.Position2D = Position2D
+
+    def get_Position3D(self):
+        return self.Position3D
+
+    def set_Position3D(self, Position3D):
+        self.Position3D = Position3D
+
+    def get_coord_system_id(self):
+        return self.coord_system_id
+
+    def set_coord_system_id(self, coord_system_id):
+        self.coord_system_id = coord_system_id
+
     def validate_idValues(self, value):
         # Validate type idValues, a restriction on xs:string.
         pass
+
     def export(self, outfile, level, namespace_='', name_='AstroCoords', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='AstroCoords')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2235,9 +2938,11 @@ class AstroCoords(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoords'):
         if self.coord_system_id is not None:
-            outfile.write(' coord_system_id=%s' % (quote_attrib(self.coord_system_id), ))
+            outfile.write(' coord_system_id=%s' % (quote_attrib(self.coord_system_id),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='AstroCoords'):
         if self.Time:
             self.Time.export(outfile, level, namespace_, name_='Time')
@@ -2245,24 +2950,28 @@ class AstroCoords(GeneratedsSuper):
             self.Position2D.export(outfile, level, namespace_, name_='Position2D')
         if self.Position3D:
             self.Position3D.export(outfile, level, namespace_, name_='Position3D')
+
     def hasContent_(self):
         if (
-            self.Time is not None or
-            self.Position2D is not None or
-            self.Position3D is not None
-            ):
+                self.Time is not None or
+                self.Position2D is not None or
+                self.Position3D is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='AstroCoords'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.coord_system_id is not None:
             showIndent(outfile, level)
             outfile.write('coord_system_id = "%s",\n' % (self.coord_system_id,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.Time is not None:
             showIndent(outfile, level)
@@ -2282,29 +2991,34 @@ class AstroCoords(GeneratedsSuper):
             self.Position3D.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('coord_system_id')
         if value is not None:
             self.coord_system_id = value
-            self.validate_idValues(self.coord_system_id)    # validate type idValues
+            self.validate_idValues(self.coord_system_id)  # validate type idValues
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'Time': 
+        if nodeName_ == 'Time':
             obj_ = Time.factory()
             obj_.build(child_)
             self.set_Time(obj_)
-        elif nodeName_ == 'Position2D': 
+        elif nodeName_ == 'Position2D':
             obj_ = Position2D.factory()
             obj_.build(child_)
             self.set_Position2D(obj_)
-        elif nodeName_ == 'Position3D': 
+        elif nodeName_ == 'Position3D':
             obj_ = Position3D.factory()
             obj_.build(child_)
             self.set_Position3D(obj_)
+
+
 # end class AstroCoords
 
 
@@ -2312,25 +3026,41 @@ class Time(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, unit=None, TimeInstant=None, Error=None):
         self.unit = _cast(None, unit)
         self.TimeInstant = TimeInstant
         self.Error = Error
+
     def factory(*args_, **kwargs_):
         if Time.subclass:
             return Time.subclass(*args_, **kwargs_)
         else:
             return Time(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TimeInstant(self): return self.TimeInstant
-    def set_TimeInstant(self, TimeInstant): self.TimeInstant = TimeInstant
-    def get_Error(self): return self.Error
-    def set_Error(self, Error): self.Error = Error
-    def get_unit(self): return self.unit
-    def set_unit(self, unit): self.unit = unit
+
+    def get_TimeInstant(self):
+        return self.TimeInstant
+
+    def set_TimeInstant(self, TimeInstant):
+        self.TimeInstant = TimeInstant
+
+    def get_Error(self):
+        return self.Error
+
+    def set_Error(self, Error):
+        self.Error = Error
+
+    def get_unit(self):
+        return self.unit
+
+    def set_unit(self, unit):
+        self.unit = unit
+
     def export(self, outfile, level, namespace_='', name_='Time', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Time')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2339,32 +3069,40 @@ class Time(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Time'):
         if self.unit is not None:
-            outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
+            outfile.write(
+                ' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Time'):
         if self.TimeInstant:
             self.TimeInstant.export(outfile, level, namespace_, name_='TimeInstant', )
         if self.Error is not None:
             showIndent(outfile, level)
-            outfile.write('<%sError>%s</%sError>\n' % (namespace_, self.format_float(self.Error, input_name='Error'), namespace_))
+            outfile.write(
+                '<%sError>%s</%sError>\n' % (namespace_, self.format_float(self.Error, input_name='Error'), namespace_))
+
     def hasContent_(self):
         if (
-            self.TimeInstant is not None or
-            self.Error is not None
-            ):
+                self.TimeInstant is not None or
+                self.Error is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Time'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.unit is not None:
             showIndent(outfile, level)
             outfile.write('unit = "%s",\n' % (self.unit,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.TimeInstant is not None:
             showIndent(outfile, level)
@@ -2375,17 +3113,20 @@ class Time(GeneratedsSuper):
         if self.Error is not None:
             showIndent(outfile, level)
             outfile.write('Error=%f,\n' % self.Error)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('unit')
         if value is not None:
             self.unit = value
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'TimeInstant': 
+        if nodeName_ == 'TimeInstant':
             obj_ = TimeInstant.factory()
             obj_.build(child_)
             self.set_TimeInstant(obj_)
@@ -2396,6 +3137,8 @@ class Time(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error = fval_
+
+
 # end class Time
 
 
@@ -2403,19 +3146,27 @@ class TimeInstant(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, ISOTime=None):
         self.ISOTime = ISOTime
+
     def factory(*args_, **kwargs_):
         if TimeInstant.subclass:
             return TimeInstant.subclass(*args_, **kwargs_)
         else:
             return TimeInstant(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_ISOTime(self): return self.ISOTime
-    def set_ISOTime(self, ISOTime): self.ISOTime = ISOTime
+
+    def get_ISOTime(self):
+        return self.ISOTime
+
+    def set_ISOTime(self, ISOTime):
+        self.ISOTime = ISOTime
+
     def export(self, outfile, level, namespace_='', name_='TimeInstant', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='TimeInstant')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2424,41 +3175,54 @@ class TimeInstant(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TimeInstant'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='TimeInstant'):
         if self.ISOTime is not None:
             showIndent(outfile, level)
-            outfile.write('<%sISOTime>%s</%sISOTime>\n' % (namespace_, self.format_string(quote_xml(self.ISOTime).encode(ExternalEncoding), input_name='ISOTime'), namespace_))
+            outfile.write('<%sISOTime>%s</%sISOTime>\n' % (
+            namespace_, self.format_string(quote_xml(self.ISOTime).encode(ExternalEncoding), input_name='ISOTime'),
+            namespace_))
+
     def hasContent_(self):
         if (
-            self.ISOTime is not None
-            ):
+                self.ISOTime is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='TimeInstant'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.ISOTime is not None:
             showIndent(outfile, level)
             outfile.write('ISOTime=%s,\n' % quote_python(self.ISOTime).encode(ExternalEncoding))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'ISOTime':
             ISOTime_ = child_.text
             self.ISOTime = ISOTime_
+
+
 # end class TimeInstant
 
 
@@ -2466,31 +3230,55 @@ class Position2D(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, unit=None, Name1=None, Name2=None, Value2=None, Error2Radius=None):
         self.unit = _cast(None, unit)
         self.Name1 = Name1
         self.Name2 = Name2
         self.Value2 = Value2
         self.Error2Radius = Error2Radius
+
     def factory(*args_, **kwargs_):
         if Position2D.subclass:
             return Position2D.subclass(*args_, **kwargs_)
         else:
             return Position2D(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Name1(self): return self.Name1
-    def set_Name1(self, Name1): self.Name1 = Name1
-    def get_Name2(self): return self.Name2
-    def set_Name2(self, Name2): self.Name2 = Name2
-    def get_Value2(self): return self.Value2
-    def set_Value2(self, Value2): self.Value2 = Value2
-    def get_Error2Radius(self): return self.Error2Radius
-    def set_Error2Radius(self, Error2Radius): self.Error2Radius = Error2Radius
-    def get_unit(self): return self.unit
-    def set_unit(self, unit): self.unit = unit
+
+    def get_Name1(self):
+        return self.Name1
+
+    def set_Name1(self, Name1):
+        self.Name1 = Name1
+
+    def get_Name2(self):
+        return self.Name2
+
+    def set_Name2(self, Name2):
+        self.Name2 = Name2
+
+    def get_Value2(self):
+        return self.Value2
+
+    def set_Value2(self, Value2):
+        self.Value2 = Value2
+
+    def get_Error2Radius(self):
+        return self.Error2Radius
+
+    def set_Error2Radius(self, Error2Radius):
+        self.Error2Radius = Error2Radius
+
+    def get_unit(self):
+        return self.unit
+
+    def set_unit(self, unit):
+        self.unit = unit
+
     def export(self, outfile, level, namespace_='', name_='Position2D', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Position2D')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2499,40 +3287,52 @@ class Position2D(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position2D'):
         if self.unit is not None:
-            outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
+            outfile.write(
+                ' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Position2D'):
         if self.Name1 is not None:
             showIndent(outfile, level)
-            outfile.write('<%sName1>%s</%sName1>\n' % (namespace_, self.format_string(quote_xml(self.Name1).encode(ExternalEncoding), input_name='Name1'), namespace_))
+            outfile.write('<%sName1>%s</%sName1>\n' % (
+            namespace_, self.format_string(quote_xml(self.Name1).encode(ExternalEncoding), input_name='Name1'),
+            namespace_))
         if self.Name2 is not None:
             showIndent(outfile, level)
-            outfile.write('<%sName2>%s</%sName2>\n' % (namespace_, self.format_string(quote_xml(self.Name2).encode(ExternalEncoding), input_name='Name2'), namespace_))
+            outfile.write('<%sName2>%s</%sName2>\n' % (
+            namespace_, self.format_string(quote_xml(self.Name2).encode(ExternalEncoding), input_name='Name2'),
+            namespace_))
         if self.Value2:
             self.Value2.export(outfile, level, namespace_, name_='Value2', )
         if self.Error2Radius is not None:
             showIndent(outfile, level)
-            outfile.write('<%sError2Radius>%s</%sError2Radius>\n' % (namespace_, self.format_float(self.Error2Radius, input_name='Error2Radius'), namespace_))
+            outfile.write('<%sError2Radius>%s</%sError2Radius>\n' % (
+            namespace_, self.format_float(self.Error2Radius, input_name='Error2Radius'), namespace_))
+
     def hasContent_(self):
         if (
-            self.Name1 is not None or
-            self.Name2 is not None or
-            self.Value2 is not None or
-            self.Error2Radius is not None
-            ):
+                self.Name1 is not None or
+                self.Name2 is not None or
+                self.Value2 is not None or
+                self.Error2Radius is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Position2D'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.unit is not None:
             showIndent(outfile, level)
             outfile.write('unit = "%s",\n' % (self.unit,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.Name1 is not None:
             showIndent(outfile, level)
@@ -2549,15 +3349,18 @@ class Position2D(GeneratedsSuper):
         if self.Error2Radius is not None:
             showIndent(outfile, level)
             outfile.write('Error2Radius=%f,\n' % self.Error2Radius)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('unit')
         if value is not None:
             self.unit = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Name1':
             Name1_ = child_.text
@@ -2565,7 +3368,7 @@ class Position2D(GeneratedsSuper):
         elif nodeName_ == 'Name2':
             Name2_ = child_.text
             self.Name2 = Name2_
-        elif nodeName_ == 'Value2': 
+        elif nodeName_ == 'Value2':
             obj_ = Value2.factory()
             obj_.build(child_)
             self.set_Value2(obj_)
@@ -2576,6 +3379,8 @@ class Position2D(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error2Radius = fval_
+
+
 # end class Position2D
 
 
@@ -2583,31 +3388,55 @@ class Position3D(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, unit=None, Name1=None, Name2=None, Name3=None, Value3=None):
         self.unit = _cast(None, unit)
         self.Name1 = Name1
         self.Name2 = Name2
         self.Name3 = Name3
         self.Value3 = Value3
+
     def factory(*args_, **kwargs_):
         if Position3D.subclass:
             return Position3D.subclass(*args_, **kwargs_)
         else:
             return Position3D(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Name1(self): return self.Name1
-    def set_Name1(self, Name1): self.Name1 = Name1
-    def get_Name2(self): return self.Name2
-    def set_Name2(self, Name2): self.Name2 = Name2
-    def get_Name3(self): return self.Name3
-    def set_Name3(self, Name3): self.Name3 = Name3
-    def get_Value3(self): return self.Value3
-    def set_Value3(self, Value3): self.Value3 = Value3
-    def get_unit(self): return self.unit
-    def set_unit(self, unit): self.unit = unit
+
+    def get_Name1(self):
+        return self.Name1
+
+    def set_Name1(self, Name1):
+        self.Name1 = Name1
+
+    def get_Name2(self):
+        return self.Name2
+
+    def set_Name2(self, Name2):
+        self.Name2 = Name2
+
+    def get_Name3(self):
+        return self.Name3
+
+    def set_Name3(self, Name3):
+        self.Name3 = Name3
+
+    def get_Value3(self):
+        return self.Value3
+
+    def set_Value3(self, Value3):
+        self.Value3 = Value3
+
+    def get_unit(self):
+        return self.unit
+
+    def set_unit(self, unit):
+        self.unit = unit
+
     def export(self, outfile, level, namespace_='', name_='Position3D', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Position3D')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2616,40 +3445,53 @@ class Position3D(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position3D'):
         if self.unit is not None:
-            outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
+            outfile.write(
+                ' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Position3D'):
         if self.Name1 is not None:
             showIndent(outfile, level)
-            outfile.write('<%sName1>%s</%sName1>\n' % (namespace_, self.format_string(quote_xml(self.Name1).encode(ExternalEncoding), input_name='Name1'), namespace_))
+            outfile.write('<%sName1>%s</%sName1>\n' % (
+            namespace_, self.format_string(quote_xml(self.Name1).encode(ExternalEncoding), input_name='Name1'),
+            namespace_))
         if self.Name2 is not None:
             showIndent(outfile, level)
-            outfile.write('<%sName2>%s</%sName2>\n' % (namespace_, self.format_string(quote_xml(self.Name2).encode(ExternalEncoding), input_name='Name2'), namespace_))
+            outfile.write('<%sName2>%s</%sName2>\n' % (
+            namespace_, self.format_string(quote_xml(self.Name2).encode(ExternalEncoding), input_name='Name2'),
+            namespace_))
         if self.Name3 is not None:
             showIndent(outfile, level)
-            outfile.write('<%sName3>%s</%sName3>\n' % (namespace_, self.format_string(quote_xml(self.Name3).encode(ExternalEncoding), input_name='Name3'), namespace_))
+            outfile.write('<%sName3>%s</%sName3>\n' % (
+            namespace_, self.format_string(quote_xml(self.Name3).encode(ExternalEncoding), input_name='Name3'),
+            namespace_))
         if self.Value3:
             self.Value3.export(outfile, level, namespace_, name_='Value3', )
+
     def hasContent_(self):
         if (
-            self.Name1 is not None or
-            self.Name2 is not None or
-            self.Name3 is not None or
-            self.Value3 is not None
-            ):
+                self.Name1 is not None or
+                self.Name2 is not None or
+                self.Name3 is not None or
+                self.Value3 is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Position3D'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.unit is not None:
             showIndent(outfile, level)
             outfile.write('unit = "%s",\n' % (self.unit,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.Name1 is not None:
             showIndent(outfile, level)
@@ -2666,15 +3508,18 @@ class Position3D(GeneratedsSuper):
             self.Value3.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('unit')
         if value is not None:
             self.unit = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Name1':
             Name1_ = child_.text
@@ -2685,10 +3530,12 @@ class Position3D(GeneratedsSuper):
         elif nodeName_ == 'Name3':
             Name3_ = child_.text
             self.Name3 = Name3_
-        elif nodeName_ == 'Value3': 
+        elif nodeName_ == 'Value3':
             obj_ = Value3.factory()
             obj_.build(child_)
             self.set_Value3(obj_)
+
+
 # end class Position3D
 
 
@@ -2696,22 +3543,34 @@ class Value2(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, C1=None, C2=None):
         self.C1 = C1
         self.C2 = C2
+
     def factory(*args_, **kwargs_):
         if Value2.subclass:
             return Value2.subclass(*args_, **kwargs_)
         else:
             return Value2(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_C1(self): return self.C1
-    def set_C1(self, C1): self.C1 = C1
-    def get_C2(self): return self.C2
-    def set_C2(self, C2): self.C2 = C2
+
+    def get_C1(self):
+        return self.C1
+
+    def set_C1(self, C1):
+        self.C1 = C1
+
+    def get_C2(self):
+        return self.C2
+
+    def set_C2(self, C2):
+        self.C2 = C2
+
     def export(self, outfile, level, namespace_='', name_='Value2', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Value2')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2720,8 +3579,10 @@ class Value2(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Value2'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Value2'):
         if self.C1 is not None:
             showIndent(outfile, level)
@@ -2729,21 +3590,25 @@ class Value2(GeneratedsSuper):
         if self.C2 is not None:
             showIndent(outfile, level)
             outfile.write('<%sC2>%s</%sC2>\n' % (namespace_, self.format_float(self.C2, input_name='C2'), namespace_))
+
     def hasContent_(self):
         if (
-            self.C1 is not None or
-            self.C2 is not None
-            ):
+                self.C1 is not None or
+                self.C2 is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Value2'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.C1 is not None:
             showIndent(outfile, level)
@@ -2751,13 +3616,16 @@ class Value2(GeneratedsSuper):
         if self.C2 is not None:
             showIndent(outfile, level)
             outfile.write('C2=%f,\n' % self.C2)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'C1':
             sval_ = child_.text
@@ -2773,6 +3641,8 @@ class Value2(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C2 = fval_
+
+
 # end class Value2
 
 
@@ -2780,25 +3650,41 @@ class Value3(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, C1=None, C2=None, C3=None):
         self.C1 = C1
         self.C2 = C2
         self.C3 = C3
+
     def factory(*args_, **kwargs_):
         if Value3.subclass:
             return Value3.subclass(*args_, **kwargs_)
         else:
             return Value3(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_C1(self): return self.C1
-    def set_C1(self, C1): self.C1 = C1
-    def get_C2(self): return self.C2
-    def set_C2(self, C2): self.C2 = C2
-    def get_C3(self): return self.C3
-    def set_C3(self, C3): self.C3 = C3
+
+    def get_C1(self):
+        return self.C1
+
+    def set_C1(self, C1):
+        self.C1 = C1
+
+    def get_C2(self):
+        return self.C2
+
+    def set_C2(self, C2):
+        self.C2 = C2
+
+    def get_C3(self):
+        return self.C3
+
+    def set_C3(self, C3):
+        self.C3 = C3
+
     def export(self, outfile, level, namespace_='', name_='Value3', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Value3')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2807,8 +3693,10 @@ class Value3(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Value3'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Value3'):
         if self.C1 is not None:
             showIndent(outfile, level)
@@ -2819,22 +3707,26 @@ class Value3(GeneratedsSuper):
         if self.C3 is not None:
             showIndent(outfile, level)
             outfile.write('<%sC3>%s</%sC3>\n' % (namespace_, self.format_float(self.C3, input_name='C3'), namespace_))
+
     def hasContent_(self):
         if (
-            self.C1 is not None or
-            self.C2 is not None or
-            self.C3 is not None
-            ):
+                self.C1 is not None or
+                self.C2 is not None or
+                self.C3 is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Value3'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.C1 is not None:
             showIndent(outfile, level)
@@ -2845,13 +3737,16 @@ class Value3(GeneratedsSuper):
         if self.C3 is not None:
             showIndent(outfile, level)
             outfile.write('C3=%f,\n' % self.C3)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'C1':
             sval_ = child_.text
@@ -2874,6 +3769,8 @@ class Value3(GeneratedsSuper):
             except (TypeError, ValueError), exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C3 = fval_
+
+
 # end class Value3
 
 
@@ -2881,25 +3778,41 @@ class ObservatoryLocation(GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
+
     def __init__(self, id=None, AstroCoordSystem=None, AstroCoords=None):
         self.id = _cast(None, id)
         self.AstroCoordSystem = AstroCoordSystem
         self.AstroCoords = AstroCoords
+
     def factory(*args_, **kwargs_):
         if ObservatoryLocation.subclass:
             return ObservatoryLocation.subclass(*args_, **kwargs_)
         else:
             return ObservatoryLocation(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_AstroCoordSystem(self): return self.AstroCoordSystem
-    def set_AstroCoordSystem(self, AstroCoordSystem): self.AstroCoordSystem = AstroCoordSystem
-    def get_AstroCoords(self): return self.AstroCoords
-    def set_AstroCoords(self, AstroCoords): self.AstroCoords = AstroCoords
-    def get_id(self): return self.id
-    def set_id(self, id): self.id = id
+
+    def get_AstroCoordSystem(self):
+        return self.AstroCoordSystem
+
+    def set_AstroCoordSystem(self, AstroCoordSystem):
+        self.AstroCoordSystem = AstroCoordSystem
+
+    def get_AstroCoords(self):
+        return self.AstroCoords
+
+    def set_AstroCoords(self, AstroCoords):
+        self.AstroCoords = AstroCoords
+
+    def get_id(self):
+        return self.id
+
+    def set_id(self, id):
+        self.id = id
+
     def export(self, outfile, level, namespace_='', name_='ObservatoryLocation', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='ObservatoryLocation')
         if self.hasContent_():
             outfile.write('>\n')
@@ -2908,31 +3821,38 @@ class ObservatoryLocation(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObservatoryLocation'):
         if self.id is not None:
-            outfile.write(' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
+            outfile.write(
+                ' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='ObservatoryLocation'):
         if self.AstroCoordSystem:
             self.AstroCoordSystem.export(outfile, level, namespace_, name_='AstroCoordSystem')
         if self.AstroCoords:
             self.AstroCoords.export(outfile, level, namespace_, name_='AstroCoords')
+
     def hasContent_(self):
         if (
-            self.AstroCoordSystem is not None or
-            self.AstroCoords is not None
-            ):
+                self.AstroCoordSystem is not None or
+                self.AstroCoords is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='ObservatoryLocation'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.id is not None:
             showIndent(outfile, level)
             outfile.write('id = "%s",\n' % (self.id,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         if self.AstroCoordSystem is not None:
             showIndent(outfile, level)
@@ -2946,24 +3866,29 @@ class ObservatoryLocation(GeneratedsSuper):
             self.AstroCoords.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('id')
         if value is not None:
             self.id = value
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'AstroCoordSystem': 
+        if nodeName_ == 'AstroCoordSystem':
             obj_ = AstroCoordSystem.factory()
             obj_.build(child_)
             self.set_AstroCoordSystem(obj_)
-        elif nodeName_ == 'AstroCoords': 
+        elif nodeName_ == 'AstroCoords':
             obj_ = AstroCoords.factory()
             obj_.build(child_)
             self.set_AstroCoords(obj_)
+
+
 # end class ObservatoryLocation
 
 
@@ -2972,6 +3897,7 @@ class How(GeneratedsSuper):
     Reference elements."""
     subclass = None
     superclass = None
+
     def __init__(self, Description=None, Reference=None):
         if Description is None:
             self.Description = []
@@ -2981,23 +3907,42 @@ class How(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if How.subclass:
             return How.subclass(*args_, **kwargs_)
         else:
             return How(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
     def export(self, outfile, level, namespace_='', name_='How', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='How')
         if self.hasContent_():
             outfile.write('>\n')
@@ -3006,29 +3951,37 @@ class How(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='How'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='How'):
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Description or
-            self.Reference
-            ):
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='How'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Description=[\n')
@@ -3051,21 +4004,26 @@ class How(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class How
 
 
@@ -3075,7 +4033,9 @@ class Why(GeneratedsSuper):
     Inference containers for more semantic sophistication."""
     subclass = None
     superclass = None
-    def __init__(self, importance=None, expires=None, Name=None, Concept=None, Inference=None, Description=None, Reference=None):
+
+    def __init__(self, importance=None, expires=None, Name=None, Concept=None, Inference=None, Description=None,
+                 Reference=None):
         self.importance = _cast(float, importance)
         self.expires = _cast(None, expires)
         if Name is None:
@@ -3098,39 +4058,90 @@ class Why(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if Why.subclass:
             return Why.subclass(*args_, **kwargs_)
         else:
             return Why(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Name(self): return self.Name
-    def set_Name(self, Name): self.Name = Name
-    def add_Name(self, value): self.Name.append(value)
-    def insert_Name(self, index, value): self.Name[index] = value
-    def get_Concept(self): return self.Concept
-    def set_Concept(self, Concept): self.Concept = Concept
-    def add_Concept(self, value): self.Concept.append(value)
-    def insert_Concept(self, index, value): self.Concept[index] = value
-    def get_Inference(self): return self.Inference
-    def set_Inference(self, Inference): self.Inference = Inference
-    def add_Inference(self, value): self.Inference.append(value)
-    def insert_Inference(self, index, value): self.Inference[index] = value
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_importance(self): return self.importance
-    def set_importance(self, importance): self.importance = importance
-    def get_expires(self): return self.expires
-    def set_expires(self, expires): self.expires = expires
+
+    def get_Name(self):
+        return self.Name
+
+    def set_Name(self, Name):
+        self.Name = Name
+
+    def add_Name(self, value):
+        self.Name.append(value)
+
+    def insert_Name(self, index, value):
+        self.Name[index] = value
+
+    def get_Concept(self):
+        return self.Concept
+
+    def set_Concept(self, Concept):
+        self.Concept = Concept
+
+    def add_Concept(self, value):
+        self.Concept.append(value)
+
+    def insert_Concept(self, index, value):
+        self.Concept[index] = value
+
+    def get_Inference(self):
+        return self.Inference
+
+    def set_Inference(self, Inference):
+        self.Inference = Inference
+
+    def add_Inference(self, value):
+        self.Inference.append(value)
+
+    def insert_Inference(self, index, value):
+        self.Inference[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_importance(self):
+        return self.importance
+
+    def set_importance(self, importance):
+        self.importance = importance
+
+    def get_expires(self):
+        return self.expires
+
+    def set_expires(self, expires):
+        self.expires = expires
+
     def export(self, outfile, level, namespace_='', name_='Why', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Why')
         if self.hasContent_():
             outfile.write('>\n')
@@ -3139,41 +4150,52 @@ class Why(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Why'):
         if self.importance is not None:
             outfile.write(' importance="%s"' % self.format_float(self.importance, input_name='importance'))
         if self.expires is not None:
-            outfile.write(' expires=%s' % (self.format_string(quote_attrib(self.expires).encode(ExternalEncoding), input_name='expires'), ))
+            outfile.write(' expires=%s' % (
+            self.format_string(quote_attrib(self.expires).encode(ExternalEncoding), input_name='expires'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Why'):
         for Name_ in self.Name:
             showIndent(outfile, level)
-            outfile.write('<%sName>%s</%sName>\n' % (namespace_, self.format_string(quote_xml(Name_).encode(ExternalEncoding), input_name='Name'), namespace_))
+            outfile.write('<%sName>%s</%sName>\n' % (
+            namespace_, self.format_string(quote_xml(Name_).encode(ExternalEncoding), input_name='Name'), namespace_))
         for Concept_ in self.Concept:
             showIndent(outfile, level)
-            outfile.write('<%sConcept>%s</%sConcept>\n' % (namespace_, self.format_string(quote_xml(Concept_).encode(ExternalEncoding), input_name='Concept'), namespace_))
+            outfile.write('<%sConcept>%s</%sConcept>\n' % (
+            namespace_, self.format_string(quote_xml(Concept_).encode(ExternalEncoding), input_name='Concept'),
+            namespace_))
         for Inference_ in self.Inference:
             Inference_.export(outfile, level, namespace_, name_='Inference')
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Name or
-            self.Concept or
-            self.Inference or
-            self.Description or
-            self.Reference
-            ):
+                self.Name or
+                self.Concept or
+                self.Inference or
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Why'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.importance is not None:
             showIndent(outfile, level)
@@ -3181,6 +4203,7 @@ class Why(GeneratedsSuper):
         if self.expires is not None:
             showIndent(outfile, level)
             outfile.write('expires = "%s",\n' % (self.expires,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Name=[\n')
@@ -3233,11 +4256,13 @@ class Why(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('importance')
         if value is not None:
@@ -3248,6 +4273,7 @@ class Why(GeneratedsSuper):
         value = attrs.get('expires')
         if value is not None:
             self.expires = value
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Name':
             Name_ = child_.text
@@ -3255,17 +4281,19 @@ class Why(GeneratedsSuper):
         elif nodeName_ == 'Concept':
             Concept_ = child_.text
             self.Concept.append(Concept_)
-        elif nodeName_ == 'Inference': 
+        elif nodeName_ == 'Inference':
             obj_ = Inference.factory()
             obj_.build(child_)
             self.Inference.append(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class Why
 
 
@@ -3274,6 +4302,7 @@ class Inference(GeneratedsSuper):
     relationships and probability."""
     subclass = None
     superclass = None
+
     def __init__(self, relation=None, probability=None, Name=None, Concept=None, Description=None, Reference=None):
         self.relation = _cast(None, relation)
         self.probability = _cast(None, probability)
@@ -3293,38 +4322,82 @@ class Inference(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
     def factory(*args_, **kwargs_):
         if Inference.subclass:
             return Inference.subclass(*args_, **kwargs_)
         else:
             return Inference(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_Name(self): return self.Name
-    def set_Name(self, Name): self.Name = Name
-    def add_Name(self, value): self.Name.append(value)
-    def insert_Name(self, index, value): self.Name[index] = value
-    def get_Concept(self): return self.Concept
-    def set_Concept(self, Concept): self.Concept = Concept
-    def add_Concept(self, value): self.Concept.append(value)
-    def insert_Concept(self, index, value): self.Concept[index] = value
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
-    def add_Description(self, value): self.Description.append(value)
-    def insert_Description(self, index, value): self.Description[index] = value
-    def get_Reference(self): return self.Reference
-    def set_Reference(self, Reference): self.Reference = Reference
-    def add_Reference(self, value): self.Reference.append(value)
-    def insert_Reference(self, index, value): self.Reference[index] = value
-    def get_relation(self): return self.relation
-    def set_relation(self, relation): self.relation = relation
-    def get_probability(self): return self.probability
-    def set_probability(self, probability): self.probability = probability
+
+    def get_Name(self):
+        return self.Name
+
+    def set_Name(self, Name):
+        self.Name = Name
+
+    def add_Name(self, value):
+        self.Name.append(value)
+
+    def insert_Name(self, index, value):
+        self.Name[index] = value
+
+    def get_Concept(self):
+        return self.Concept
+
+    def set_Concept(self, Concept):
+        self.Concept = Concept
+
+    def add_Concept(self, value):
+        self.Concept.append(value)
+
+    def insert_Concept(self, index, value):
+        self.Concept[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
+    def add_Description(self, value):
+        self.Description.append(value)
+
+    def insert_Description(self, index, value):
+        self.Description[index] = value
+
+    def get_Reference(self):
+        return self.Reference
+
+    def set_Reference(self, Reference):
+        self.Reference = Reference
+
+    def add_Reference(self, value):
+        self.Reference.append(value)
+
+    def insert_Reference(self, index, value):
+        self.Reference[index] = value
+
+    def get_relation(self):
+        return self.relation
+
+    def set_relation(self, relation):
+        self.relation = relation
+
+    def get_probability(self):
+        return self.probability
+
+    def set_probability(self, probability):
+        self.probability = probability
+
     def validate_smallFloat(self, value):
         # Validate type smallFloat, a restriction on xs:float.
         pass
+
     def export(self, outfile, level, namespace_='', name_='Inference', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Inference')
         if self.hasContent_():
             outfile.write('>\n')
@@ -3333,38 +4406,49 @@ class Inference(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Inference'):
         if self.relation is not None:
-            outfile.write(' relation=%s' % (self.format_string(quote_attrib(self.relation).encode(ExternalEncoding), input_name='relation'), ))
+            outfile.write(' relation=%s' % (
+            self.format_string(quote_attrib(self.relation).encode(ExternalEncoding), input_name='relation'),))
         if self.probability is not None:
-            outfile.write(' probability=%s' % (quote_attrib(self.probability), ))
+            outfile.write(' probability=%s' % (quote_attrib(self.probability),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Inference'):
         for Name_ in self.Name:
             showIndent(outfile, level)
-            outfile.write('<%sName>%s</%sName>\n' % (namespace_, self.format_string(quote_xml(Name_).encode(ExternalEncoding), input_name='Name'), namespace_))
+            outfile.write('<%sName>%s</%sName>\n' % (
+            namespace_, self.format_string(quote_xml(Name_).encode(ExternalEncoding), input_name='Name'), namespace_))
         for Concept_ in self.Concept:
             showIndent(outfile, level)
-            outfile.write('<%sConcept>%s</%sConcept>\n' % (namespace_, self.format_string(quote_xml(Concept_).encode(ExternalEncoding), input_name='Concept'), namespace_))
+            outfile.write('<%sConcept>%s</%sConcept>\n' % (
+            namespace_, self.format_string(quote_xml(Concept_).encode(ExternalEncoding), input_name='Concept'),
+            namespace_))
         for Description_ in self.Description:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (
+            namespace_, self.format_string(quote_xml(Description_).encode(ExternalEncoding), input_name='Description'),
+            namespace_))
         for Reference_ in self.Reference:
             Reference_.export(outfile, level, namespace_, name_='Reference')
+
     def hasContent_(self):
         if (
-            self.Name or
-            self.Concept or
-            self.Description or
-            self.Reference
-            ):
+                self.Name or
+                self.Concept or
+                self.Description or
+                self.Reference
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Inference'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.relation is not None:
             showIndent(outfile, level)
@@ -3372,6 +4456,7 @@ class Inference(GeneratedsSuper):
         if self.probability is not None:
             showIndent(outfile, level)
             outfile.write('probability = %f,\n' % (self.probability,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('Name=[\n')
@@ -3412,11 +4497,13 @@ class Inference(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('relation')
         if value is not None:
@@ -3424,7 +4511,8 @@ class Inference(GeneratedsSuper):
         value = attrs.get('probability')
         if value is not None:
             self.probability = value
-            self.validate_smallFloat(self.probability)    # validate type smallFloat
+            self.validate_smallFloat(self.probability)  # validate type smallFloat
+
     def buildChildren(self, child_, nodeName_):
         if nodeName_ == 'Name':
             Name_ = child_.text
@@ -3435,10 +4523,12 @@ class Inference(GeneratedsSuper):
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description.append(Description_)
-        elif nodeName_ == 'Reference': 
+        elif nodeName_ == 'Reference':
             obj_ = Reference.factory()
             obj_.build(child_)
             self.Reference.append(obj_)
+
+
 # end class Inference
 
 
@@ -3448,27 +4538,43 @@ class Citations(GeneratedsSuper):
     event."""
     subclass = None
     superclass = None
+
     def __init__(self, EventIVORN=None, Description=None):
         if EventIVORN is None:
             self.EventIVORN = []
         else:
             self.EventIVORN = EventIVORN
         self.Description = Description
+
     def factory(*args_, **kwargs_):
         if Citations.subclass:
             return Citations.subclass(*args_, **kwargs_)
         else:
             return Citations(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_EventIVORN(self): return self.EventIVORN
-    def set_EventIVORN(self, EventIVORN): self.EventIVORN = EventIVORN
-    def add_EventIVORN(self, value): self.EventIVORN.append(value)
-    def insert_EventIVORN(self, index, value): self.EventIVORN[index] = value
-    def get_Description(self): return self.Description
-    def set_Description(self, Description): self.Description = Description
+
+    def get_EventIVORN(self):
+        return self.EventIVORN
+
+    def set_EventIVORN(self, EventIVORN):
+        self.EventIVORN = EventIVORN
+
+    def add_EventIVORN(self, value):
+        self.EventIVORN.append(value)
+
+    def insert_EventIVORN(self, index, value):
+        self.EventIVORN[index] = value
+
+    def get_Description(self):
+        return self.Description
+
+    def set_Description(self, Description):
+        self.Description = Description
+
     def export(self, outfile, level, namespace_='', name_='Citations', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Citations')
         if self.hasContent_():
             outfile.write('>\n')
@@ -3477,29 +4583,36 @@ class Citations(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Citations'):
         pass
+
     def exportChildren(self, outfile, level, namespace_='', name_='Citations'):
         for EventIVORN_ in self.EventIVORN:
             EventIVORN_.export(outfile, level, namespace_, name_='EventIVORN')
         if self.Description is not None:
             showIndent(outfile, level)
-            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
+            outfile.write('<%sDescription>%s</%sDescription>\n' % (namespace_, self.format_string(
+                quote_xml(self.Description).encode(ExternalEncoding), input_name='Description'), namespace_))
+
     def hasContent_(self):
         if (
-            self.EventIVORN or
-            self.Description is not None
-            ):
+                self.EventIVORN or
+                self.Description is not None
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Citations'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         pass
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('EventIVORN=[\n')
@@ -3516,21 +4629,26 @@ class Citations(GeneratedsSuper):
         if self.Description is not None:
             showIndent(outfile, level)
             outfile.write('Description=%s,\n' % quote_python(self.Description).encode(ExternalEncoding))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         pass
+
     def buildChildren(self, child_, nodeName_):
-        if nodeName_ == 'EventIVORN': 
+        if nodeName_ == 'EventIVORN':
             obj_ = EventIVORN.factory()
             obj_.build(child_)
             self.EventIVORN.append(obj_)
         elif nodeName_ == 'Description':
             Description_ = child_.text
             self.Description = Description_
+
+
 # end class Citations
 
 
@@ -3540,25 +4658,38 @@ class EventIVORN(GeneratedsSuper):
     from 'followup', 'supersedes', or 'retraction'."""
     subclass = None
     superclass = None
+
     def __init__(self, cite=None, valueOf_=None):
         self.cite = _cast(None, cite)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if EventIVORN.subclass:
             return EventIVORN.subclass(*args_, **kwargs_)
         else:
             return EventIVORN(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_cite(self): return self.cite
-    def set_cite(self, cite): self.cite = cite
+
+    def get_cite(self):
+        return self.cite
+
+    def set_cite(self, cite):
+        self.cite = cite
+
     def validate_citeValues(self, value):
         # Validate type citeValues, a restriction on xs:string.
         pass
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
     def export(self, outfile, level, namespace_='', name_='EventIVORN', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='EventIVORN')
         if self.hasContent_():
             outfile.write('>')
@@ -3567,43 +4698,54 @@ class EventIVORN(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='EventIVORN'):
         if self.cite is not None:
-            outfile.write(' cite=%s' % (quote_attrib(self.cite), ))
+            outfile.write(' cite=%s' % (quote_attrib(self.cite),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='EventIVORN'):
         pass
+
     def hasContent_(self):
         if (
-            self.valueOf_
-            ):
+                self.valueOf_
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='EventIVORN'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.cite is not None:
             showIndent(outfile, level)
             outfile.write('cite = "%s",\n' % (self.cite,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('cite')
         if value is not None:
             self.cite = value
-            self.validate_citeValues(self.cite)    # validate type citeValues
+            self.validate_citeValues(self.cite)  # validate type citeValues
+
     def buildChildren(self, child_, nodeName_):
         pass
+
+
 # end class EventIVORN
 
 
@@ -3613,28 +4755,48 @@ class Reference(GeneratedsSuper):
     can also be named."""
     subclass = None
     superclass = None
+
     def __init__(self, type_='url', uri=None, name=None, valueOf_=None):
         self.type_ = _cast(None, type_)
         self.uri = _cast(None, uri)
         self.name = _cast(None, name)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if Reference.subclass:
             return Reference.subclass(*args_, **kwargs_)
         else:
             return Reference(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_uri(self): return self.uri
-    def set_uri(self, uri): self.uri = uri
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_uri(self):
+        return self.uri
+
+    def set_uri(self, uri):
+        self.uri = uri
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
     def export(self, outfile, level, namespace_='', name_='Reference', namespacedef_=''):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '',))
         self.exportAttributes(outfile, level, namespace_, name_='Reference')
         if self.hasContent_():
             outfile.write('>')
@@ -3643,26 +4805,34 @@ class Reference(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Reference'):
         if self.type_ is not None:
-            outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
-        outfile.write(' uri=%s' % (self.format_string(quote_attrib(self.uri).encode(ExternalEncoding), input_name='uri'), ))
+            outfile.write(' type=%s' % (
+            self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'),))
+        outfile.write(
+            ' uri=%s' % (self.format_string(quote_attrib(self.uri).encode(ExternalEncoding), input_name='uri'),))
         if self.name is not None:
-            outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
+            outfile.write(
+                ' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'),))
+
     def exportChildren(self, outfile, level, namespace_='', name_='Reference'):
         pass
+
     def hasContent_(self):
         if (
-            self.valueOf_
-            ):
+                self.valueOf_
+        ):
             return True
         else:
             return False
+
     def exportLiteral(self, outfile, level, name_='Reference'):
         level += 1
         self.exportLiteralAttributes(outfile, level, name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
+
     def exportLiteralAttributes(self, outfile, level, name_):
         if self.type_ is not None:
             showIndent(outfile, level)
@@ -3673,15 +4843,18 @@ class Reference(GeneratedsSuper):
         if self.name is not None:
             showIndent(outfile, level)
             outfile.write('name = "%s",\n' % (self.name,))
+
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib)
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, nodeName_)
+
     def buildAttributes(self, node, attrs):
         value = attrs.get('type')
         if value is not None:
@@ -3692,14 +4865,18 @@ class Reference(GeneratedsSuper):
         value = attrs.get('name')
         if value is not None:
             self.name = value
+
     def buildChildren(self, child_, nodeName_):
         pass
+
+
 # end class Reference
 
 
 USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
+
 
 def usage():
     print USAGE_TEXT
@@ -3721,8 +4898,8 @@ def parse(inFileName):
     # Enable Python to collect the space used by the DOM.
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='')
+    rootObj.export(sys.stdout, 0, name_=rootTag,
+                   namespacedef_='')
     return rootObj
 
 
@@ -3737,7 +4914,7 @@ def parseString(inString):
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
     rootObj.export(sys.stdout, 0, name_="VOEvent",
-        namespacedef_='')
+                   namespacedef_='')
     return rootObj
 
 
@@ -3766,6 +4943,5 @@ def main():
 
 
 if __name__ == '__main__':
-    #import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     main()
-

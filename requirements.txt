@@ -1,0 +1,3 @@
+pygcn
+pyephem
+#chimera-python

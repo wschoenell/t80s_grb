@@ -1,0 +1,1684 @@
+<html>
+<head><title>GCN/Swift GRB Notices</title></head>
+<body>
+<h1>GCN/Swift GRB and Transient Notices</h1>
+<p>
+<b>TABLE OF CONTENTS:</b>
+<ol>
+<li><a href="#tc1">Introduction</a></li>
+<li><a href="#tc2">Notice types, Content, and Purpose</a></li>
+<li><a href="#tc3">Instruments, Positions, and Time_delays</a></li>
+<li><a href="#tc4">Sequence of Events</a></li>
+<li><a href="#tc5">Formats</a></li>
+<li><a href="#tc6">Filtering</a></li>
+<li><a href="#tc7">Error Boxes</a></li>
+<li><a href="#tc8">Test Notices</a></li>
+<li><a href="#tc8a">Observing Strategy</a></li>
+<li><a href="#tc9a">Subthreshold</a></li>
+<li><a href="#tc9b">Recognition</a></li>
+<li><a href="#tc10">Further Help</a></li>
+<li><a href="#tc11">E-mail Examples</a></li>
+<li><a href="#tc12">Cell/Pager Examples</a></li>
+<li><a href="#tc13">Short-form Cell/Pager Examples</a></li>
+<li><a href="#tc14">Subject-only Cell/Pager Examples</a></li>
+<li><a href="#tc15">Test Notice Example</a></li>
+</ol>
+
+<hr>
+<a href="admin/swift_int_src_announce.txt">Announce of Swift Campaign for Faint Nearby Transients and GRBs (21 May 12)</a>
+<hr>
+<p>
+<a name="tc1"></a>
+<b>Introduction</b>
+<p>
+The GCN system has been modified to incorporate the distribution
+of positions of GRBs (and non-GRB transients) detected by the Swift spacecraft
+(all 3 instruments) plus the images, spectra, and lightcurve information.
+<p>
+About 2-3 times a week, there will be a GRB (or transient) in the FOV (field of view)
+of the BAT instrument that is bright enough to be localized.
+Swift transmits these BAT localizations through the TDRS system (Tracking & Data Relay Satellite)
+to the ground within ~20 sec after the BAT trigger (there can also be
+an XRT Position (and UVOT position) ~100 sec later).
+If that burst position meets the site's filtering criteria, then it gets that Notice.
+<p>
+Like all the other sources of GRB/transient information within the GCN system,
+users can elect to receive (or not) each of these Swift Notice types.
+<p>
+There are 27 different types of of information from the Swift mission -- this is
+about an order of magnitude more than any previous mission.  And since some of these
+Notices are of a sufficiently different type of content than previous missions
+(ie images, spectra),
+people may need to study this web page carefully to determine
+which types are suitable for their specific operation.
+All the GCN/Swift Notices are archived within the GCN website
+in the <a href="swift_grbs.html">Table of Swift GRBs</a>.
+<p>
+<a name="tc2"></a>
+<b>Notice Types, Content, and Purpose</b>
+<p>
+There are 27 (17 raw + 5 processed + 3 special + 2 misc) GCN/Swift Notice types.<br>
+They are:<br>
+<a name="tc2a"></a>
+<p>
+1)  <b>BAT_Alert Notice</b> starts the sequence of messages.<br>
+    It occurs when the BAT instrument first triggers<br>
+    (either a rate trigger or an image trigger).<br>
+    It does NOT contain an RA,Dec location of a  burst;<br>
+    only a date, time, and trigger criteria & trigger detection significance.<br>
+    It is issued only once per trigger, (but may not be present for all triggers<br>
+    if there is TDRSS bit/frame sync-up delay -- that's the reason the Alerts exist,<br>
+    to start the TDRSS sync-up process so it's ready by the time<br>
+    the BAT_Pos Notice comes along).<br>
+    Since they are available 6-30 sec before the BAT_Position Notice,<br>
+    they can be used by robotic telescopes<br>
+    as a heads-up to abort any on-going observation activity.<br>
+    The SWIFT_BAT_ALERT is currently NOT being sent to the TDRSS transmitter,<br>
+    so there is never any to receive and distribute through GCN.<br>
+    This is because the original motivation for it no longer exists.  Swift is now operating the TDRSS transmitter<br>
+     in a 24/7 mode, so the transmitter is always "warm" and always sync-ed.<br>
+<a name="tc2aba"></a>
+<p>
+2a) <b>BAT_Quicklook_Position Notice</b> contains the RA,Dec location for the burst detected by BAT.<br>
+    They are issued only once per burst, but for only ~90% of the triggers.<br>
+    They are available 0-6 sec (ave of 3 sec) before the regular BAT_Position notice.<br>
+    The time delays are about 7-30 sec after the Trigger Time (only 0.2 sec of that is due to GCN).<br>
+    They contain a subset of the information in a regular BAT_Position notice.<br>
+    They are available ONLY to socket sites -- they are NOT available to email-based sites.
+<a name="tc2b"></a>
+<p>
+2a) <b>BAT_Position Notice</b> contains the RA,Dec location for the burst detected by BAT.<br>
+    They are issued only once per burst.<br>
+    The time delays are about 7-30 sec after the Trigger Time (only 0.1 sec of that is due to GCN).<br>
+    If the on-board flight software cannot locate a burst,<br>
+    then this Position Notice will be replaced with a Pos_Nack Notice (see 2b).<br>
+    The Position Notice comes second in the sequence of Notices on the triggers/bursts.<br>
+    Since the position is based on the least-possible amount of data in the processing<br>
+    (just a small initial portion of the burst's lightcurve),<br>
+    it has the lowest significance in the localization process.  Even so,<br>
+    the uncertainty in the position is 3arcmin for the at-threshold bursts<br>
+    and 1arcmin for the bright bursts. (Both the 'at-threshold' and 'bright'<br>
+    refer to only the amount of photons in the time interval of the trigger-sampling interval <br>
+    of the burst lightcurve.)<br>
+    The trigger time listed in the Notice (ie the GRB_TIME) can be off by +/- 320 msec<br>
+    for events that have a trigger duration less than 64 msec.  This has to do with the way<br>
+    that the flight software is optimized for execution speed for evaluating the shortest trigger criteria.<br>
+    It should be noted that even though this Notice type is called the<br>
+    BAT_GRB_POSITION, it does also contain detections of hard x-ray transients.<br>
+    There is both flight- and ground-software in place to correctly identify<br>
+    bursts from transients, but this identification is not 100% perfect.<br>
+	There is also a RETRACTION form of the BAT_POS Notice.  If, after ground-processing<br>
+	with humans-in-the-loop, the initial "burst" identification is determined to be incorrect,<br>
+	then a Retraction will be issued.<br>
+    The combination of the flight s/w identification code and the ground-processing identification code<br>
+    is 98% accurate (i.e. only 2% false positives: said it was a real GRB when it was not).<br>
+    <u>SubThreshold Variation</u>:<br>
+    After 4 years of on-orbit operations, a new Notice type was added: the SubThreshold Position.<br>
+    The content and function of this type is identical to the regular BAT_Position type.<br>
+    The only difference is that these notices result from triggers with S/N levels<br>
+    below the normal 6.5 sigma (image domain) threshold level.<br>
+    The motivation for this new type is to lower the BAT threshold to see if fainter bursts<br>
+    can be found (at the cost of an obviously higher false-positive rate).<br>
+    This was discontnued after about 6 months by the Swift Team because of Swift operational problems.<br>
+<a name="tc2c"></a>
+<p>
+2b) <b>BAT_Position_Nack Notice</b> does NOT contain an RA,Dec location for the burst.<br>
+    If the BAT on-board software can not determine a location<br>
+    (even after repeated attempts, trying many different trigger criteria)<br>
+    then a Pos_Nack Notice will be sent (in place of the Pos Notice).<br>
+    This type of Notice comes second in the sequence of Notices on the trigger/burst.<br>
+    This is the last Notice in the sequence -- the sequence stops with BAT_Pos_Nack.<br>
+    Currently, BAT does not forward this message type to the TDRSS transmitter,<br>
+    so these are not received on the ground and GCN can not distribute them.<br>
+    This is OK, because it turns out that in practice they have no value<br>
+    for the follow-up community -- only for the instrument operations team.<br>
+<a name="tc2d"></a>
+<p>
+2c) <b>BAT_Position Update Notice</b> Under rare circumstances, an updated RA,Dec position.<br>
+    Notice can be issued.  If, after ground-processing with humans-in-the-loop,<br>
+	the location moves by more than 2-3 arcmin from the on-board location<br>
+    and no XRT_Position notice was available,<br>
+	then an UPDATE Position Notice will be generated and distributed.<br>
+	(Note it has been 5 years into the mission and no Updates have been issued,<br>
+	so this subtype is rare indeed. It was intended for the human-in-the-loop early-ops<br>
+    varification phase when we might have needed to issue an update.)<br>
+<a name="tc2e"></a>
+<p>
+2d) <b>BAT_Transient Notice</b> BAT does not always trigger on GRBs.  Sometimes<br>
+    it triggers on other types of astrophysical sources (eg LMXBs, HMXB, Flare stars, etc).<br>
+	Each location is compared to both on-board and ground catalogs of known sources.<br>
+	When there is a match (with in 0.3 deg) to a known source, then the trigger<br>
+	is reclassified as a Transient (instead of a GRB) and a BAT_Transient Notice is issued.<br>
+	(Note that the same trigger also goes out as a "BAT GRB Notice" with the catalog ID<br>
+	noted in the Comments section.  That is to say, the BAT_GRB_POS notice is issued<br>
+    for all BAT triggers, but the BAT_TRANS_POS is notice is issued only for those triggers<br>
+    that get classified as astrophysical-but-non-GRB in origin.)<br>
+<a name="tc2f"></a>
+<p>
+3)  <b>BAT_Lightcurve Notice</b> contains a 209.92-sec interval of the count rates<br>
+    from the Detector Array (in 4 energy bands).  The time-sampling varies throughout<br>
+    the lightcurve -- finer sampling around the trigger and coarser sampling well before the trigger and<br>
+    well after the trigger.<br>
+    The email-form of delivery method can also optionally have the lightcurve<br>
+    as an attachment (see the Table in the Formts section below).<br>
+    They also contain the exact same RA,Dec location as the BAT_Position Notice.<br>
+    They are issued only once per burst/transient.<br>
+    An <a href=bat_lc_example.jpeg>example</a> of a BAT Lightcurve.<br>
+    This lightcurve can be used to determine the length of the burst,<br>
+    and the complexity (eg single vs multiple peaks, FREDs, spikes, precursors, etc).<br>
+    Caution should be used in interpretting these TDRSS Lightcurves, because<br>
+    background has NOT been subtracted and because steady sources are coming into<br>
+    and out of the BAT FOV as the s/c slews to the new burst position.<br>
+<a name="tc2g"></a>
+<p>
+4)  <b>FOM_Observe Notice</b> indicates whether or not the Figure of Merit (FOM) calculation (done on-board) determined<br>
+    if this burst was worth observing (ie becoming the next Automated Target (AT)).<br>
+    If so, then a slew_request is sent to the spacecraft.<br>
+    (The FOM_OBSERVE is only a merit-based decision;<br>
+    the slew-decision is communicated in the next Notice Type.)<br>
+    They contain a copy of the burst BAT_Position RA,Dec location, time, etc.<br>
+    They are issued only once per burst.<br>
+<a name="tc2h"></a>
+<p>
+5)  <b>SC_Slew Notice</b> indicates whether or not the spacecraft determined<br>
+    if it was safe to slew to this new Automated Target location.<br>
+    If none of the 4 observing constraints are violated during the projected slew path,<br>
+    then the s/c will slew,<br>
+    else the slew may be delayed (1-2500 sec; until the burst RA,Dec location comes out of constraint), or<br>
+    else it may never happen (it is technically possible for BAT to detect a burst that is not observable<br>
+    by the NFIs).<br>
+    The SC_Slew notice contains a copy of the burst BAT RA,Dec location, time, etc.<br>
+    They are issued once or twice per burst.  The second occurance happens when the initial detection<br>
+	is violating an observing constraint for the NFIs (about 1 in 10 bursts have this occurance).<br>
+	Then a second SC_Slew Notice will be issued at the time when the location comes out of observing constraint<br>
+	and the s/c slews to the new target.<br>
+<a name="tc2i"></a>
+<p>
+6a) <b>XRT_Position Notice</b> contains an RA,Dec location for the burst/afterglow as determined by XRT.<br>
+    They are issued only once per burst (or never -- see XRT_Pos_Nack).<br>
+    The time delay is 80 to 150 sec (the AT slew response time of the spacecraft).<br>
+    The position comes from the XRT flight software<br>
+    scanning the initial quicklook image taken immediately after the slew to the new AT burst/transient.<br>
+    If the on-board determination was a Nack, then ground-processing with humans-in-the-loop,<br>
+	an XRT_Position Notice can be generated and distributed (time delay ~10-30 min).<br>
+	There is also a RETRACTION form of the XRT_POS Notice.  If, after ground-processing<br>
+	with humans-in-the-loop, the initial "burst" identification is determined to be incorrect<br>
+    (eg ob-board s/w locked onto a cosmic ray hit or a known steady state source),<br>
+	then a Retraction will be issued.<br>
+<a name="tc2j"></a>
+<p>
+6b) <b>XRT_Position_Nack Notice</b> does NOT contain an RA,Dec location for the burst.<br>
+    If the XRT on-board software was not able to find a point source in its initial image,<br>
+    it will try up to 11 more times (11 more images and scannings for a point-source);<br>
+    if after the 12th attempt and still no point-source, then it issues this Pos_Nack message.<br>
+    In the total Swift message sequence, there will be either an XRT_Pos or an XRT_Pos_Nack, but never both.<br>
+    When the XRT_Pos_Nack is issued, there will be no XRT_Image Notice in the sequence,<br>
+    but there will still be XRT_Spectrum and XRT_Lightcurve Notices issued.<br>
+    (This XRT_Pos_Nack is called the Centroid_Error message within the XRT documentation.)<br>
+<a name="tc2k"></a>
+<p>
+6c) <b>XRT_Position Update Notice</b> contain an updated/improved RA,Dec position.<br>
+    Notice can be issued.  If, after automated ground-processing (or with humans-in-the-loop),<br>
+	the location moves by more than about 3-4 arcsec from the on-board location,<br>
+	then an UPDATE Position Notice will be generated and distributed.<br>
+    Initially these wre rare, but after a couple years of operations,<br>
+    the occurance rates is about 1 in 2 bursts.  The position uncertainty<br>
+    usually shrinks significantly as well.  These are issued within 10-30 minutes.<br>
+<a name="tc2l"></a>
+<p>
+7)  <b>XRT_Image Notice</b> contains a 2x2arcmin (51x51 pixel subarray)<br>
+    of the full 23.6 arcmin diameter FOV centered on the position found in the XRT_Pos Notice.<br>
+    (This subarray comes from the actual CCD integration that was used for the XRT_Pos determination.)<br>
+    The integration duration can be 0.1sec or 2.5sec.<br>
+    They are issued only once per burst, but will not be present if no XRT Position was found<br>
+    (ie XRT_Pos_Nack).<br>
+    The email Notice contains the actual image only if the recipient has elected to receive<br>
+    the image as an attachment to the email format -- the image can always be obtained<br>
+    from the URL contained in the body of the email Notice.<br>
+    An <a href=xrt_image_example.html>example</a> of an XRT Image.<br>
+<a name="tc2m"></a>
+<p>
+8)  <b>XRT_Spectrum Notice</b> contains a raw spectrum of the photons collected across the FOV<br>
+    ie point-source photons plus non-point-source photons are also included.<br>
+    There are 2 types of spectra: LRPD (Low Rate PhotoDiode, mode 5), and<br>
+    WT (Windowed Timing, mode 6).  The amount of time that goes into the accumulations<br>
+    depends on the intensity of the source (and therefore the readout mode of the CCD).<br>
+    The pair of spectra are issued only once per burst; even the ones that result in an XRT_Pos_Nack.<br>
+    The XRT flight software issues two seprate spectral messages, and<br>
+    there is only one spectum per Notice, so the typical burst will have two XRT_Spectrum Notices;<br>
+    but on some occassions, there will only be one spectrum Notice.<br>
+    Each Notice contains the actual spectrum only if the recipient has elected to receive<br>
+    the spectrum as an attachment to the email format -- the spectrum can always be obtained<br>
+    from the URL contained in the body of the email Notice.<br>
+    An <a href=xrt_spec_example.html>example</a> of an XRT Spectrum.<br>
+<a name="tc2n"></a>
+<p>
+9)  <b>XRT_Lightcurve Notice</b> contains a lightcurve (starting at s/c_settle & after the initial image).<br>
+    The duration of the lightcurve depends on (a) the afterglow flux and therefore what collection mode<br>
+    the CCD is operating (LRPD, WT, or PC), and (b) any of the pre-emptive termination conditions:<br>
+    (1) time, (2) snapshot end, or (3) entry into the SAA.<br>
+    The nominal length is 100 samples which translates into a 106.2 to 826 sec duration,<br>
+    depending on the actual flux of the afterglow and the mode-switching sequence<br>
+    used by the instrument (eg LRPD, WT, PC).<br>
+    They are issued only once per burst, even the ones that result in an XRT_Pos_Nack.<br>
+    The email Notice contains the actual lightcurve only if the recipient has elected to receive<br>
+    the lightcurve as an attachment to the email format -- the lightcurve can always be obtained<br>
+    from the URL contained in the body of the email Notice.<br>
+    This is called the Prompt Lightcurve message within the XRT documentation.<br>
+    An <a href=xrt_lc_example.html>example</a> of an XRT Lightcurve.<br>
+<a name="tc2o"></a>
+<p>
+10) <b>UVOT_SourceList Notice</b> contains a list of thresholded pixel clusters<br>
+    derived from scanning the initial 100-sec image immediately after the slew settles.<br>
+    A pixel cluster is either a single pixel, or a 5-pixel cross, or a 5x5 subarray.<br>
+    The limitation in the telemetry bandwidth (and therefore the data product size is limited)<br>
+    means that not all the stars in the FOV above a given level will be contained<br>
+    in the list.  The upper and lower regions of the FOV will be truncated.<br>
+    Initially, they are issued only once per burst, but later in the mission<br>
+    they are issued 1 to 4 times during the AT burst response (it depends on observing constraints).<br>
+    The email Notice contains the actual source-list only if the recipient has elected to receive<br>
+    the source-list as an attachment to the email format -- the source-list can always be obtained<br>
+    from the URL contained in the body of the email Notice.<br>
+    An <a href=uvot_sl_example.html>example</a> of a UVOT Source List.<br>
+    (In the early days, this "source list" used to be called "finding chart",<br>
+    that name was too confusing given the other UVOT Notice was much more like a finding chart.)<br>
+<a name="tc2p"></a>
+<p>
+11) <b>UVOT_Image Notice</b> contains subarray of the full 17x17 arcmin FOV<br>
+    on the best known position.  That is 80x80 pixels covering 40x40arcsec if using an XRT Postion<br>
+    and 80x80 pixels covering (40x40arcsec if an XRT position is available, or<br>
+    320x320arcsec if using a BAT Position).<br>
+    Unlike the SourceList, this subarray has all the pixels (not thresholded clusters).<br>
+    Initially, they are issued only once per burst, but later in the mission<br>
+    they are issued 1 to 4 times during the AT burst response (it depends on observing constraints).<br>
+    The email Notice contains the actual image only if the recipient has elected to receive<br>
+    the image as an attachment to the email format -- the image can always be obtained<br>
+    from the URL contained in the body of the email Notice.<br>
+    An <a href=uvot_im_example.html>example</a> of a UVOT Image.<br>
+    (In the early days, this "image" used to be called "dark burst" or "neighbor" or "genie",<br>
+    that name was not too conotive.)<br>
+<a name="tc2q"></a>
+<p>
+12a) <b>UVOT_Position Notice</b> contains an RA,Dec location for the burst<br>
+    as determined by ground-processing software.<br>
+    They are issued only once per burst, or not at all (see Nack).<br>
+    The time delay is about 10 to 30 min.<br>
+    Once a human has processed the UVOT data and a new source object found,<br>
+    a position may be issued, if the confidence is high enough.<br>
+	There is also a RETRACTION form of the UVOT_POS Notice.  If, after even more ground-processing<br>
+	with humans-in-the-loop, a prior burst identification is determined to be incorrect<br>
+	then a Retraction will be issued.<br>
+<a name="tc2r"></a>
+<p>
+12b) <b>UVOT_Position_Nack Notice</b> does NOT contain an RA,Dec location for the burst.<br>
+    If the ground-processing software and human analysis was not able to find a point source<br>
+    then a Nack Notice is issued.<br>
+    The time delay is about 10 to 30 min.<br>
+    This Nack Notice contains an limiting magnitude for the UVOT observation<br>
+    of the XRT error circle (or BAT error circle if XRT not available).<br>
+<a name="tc2s"></a>
+<p>
+12c) <b>UVOT_Position Update Notice</b> Under rare circumstances, an updated RA,Dec position.<br>
+    Notice can be issued.  If, after ground-processing with humans-in-the-loop,<br>
+	the location moves by more than 2-3 arcsec from the on-board location,<br>
+	then an UPDATE Position Notice will be generated and distributed.<br>
+<p>
+The next 5 Notices are ground-processed versions of some of the "raw" versions listed above:<br>
+<a name="tc2t"></a>
+<p>
+13) <b>BAT_LIGHTCURVE_PROC</b>:  (Not yet available) Same as the "raw" Lightcurve Notice except that the changes<br>
+in the background due to steady-state sources leaving and coming into the BAT FOV<br>
+have been removed.  The cos(theta) effect has also been removed.<br>
+This processed version of the Lightcurve Notice will not be available<br>
+for the first year of the mission -- it will take the BAT Instrument team time<br>
+to determine the proper correction algorithms.<br>
+    An <a href=bat_lc_example.html>example</a> of a processed BAT Lightcurve.<br>
+<a name="tc2u"></a>
+<p>
+14) <b>XRT_IMAGE_PROC</b>: ....?????......<br>
+    An <a href=xrt_image_example.html>example</a> of a processed XRT Image.<br>
+<a name="tc2v"></a>
+<p>
+15) <b>XRT_SPECTRA_PROC</b>:  ....something about bias subtraction (using the bias value in the header)....<br>
+    An <a href=xrt_spec_example.html>example</a> of a processed XRT Spectrum.<br>
+<a name="tc2w"></a>
+<p>
+16) <b>UVOT_SRCLIST_PROC</b>:  The raw image converted into 4 "processed" data products:<br>
+a) ???some form of the original image????<br>
+b) the list of source objects found in the Source List,<br>
+c) the list of source objects correlated (matched up) with the Hubble GuideStar Catalog (HGSC).<br>
+d) a "prettified" image containing the HGSC objects labeled and RA,Dec gridlines drawn in, and<br>
+the BAT and XRT error circles overlayed.<br>
+    If you elect to receive the email form and to receive attachments, this Notice<br>
+    will have 4 attachments per email Notice.<br>
+    An <a href=uvot_sl_example.html>example</a> of a processed UVOT Source List.<br>
+<a name="tc2x"></a>
+<p>
+17) <b>UVOT_IMAGE_PROC</b>:  The raw image converted into 4 "processed" data products:<br>
+a) ???some form of the original image????<br>
+b) the list of source objects found in the Image,<br>
+c) the list of source objects correlated (matched up) with the Hubble GuideStar Catalog (HGSC).<br>
+d) a "prettified" image containing the HGSC objects labeled and RA,Dec gridlines drawn in, and<br>
+the BAT and XRT error circles overlayed.<br>
+    If you elect to receive the email form and to receive attachments, this Notice<br>
+    will have 4 attachments per email Notice.<br>
+    An <a href=uvot_im_example.html>example</a> of a processed UVOT Image.<br>
+
+<p>
+The next 4 Notice types are in the special category:<br>
+<br>
+<a name="tc2x2"></a>
+18) <b>BAT_Slew_Pos Notice</b> is identical in format and content to the BAT_Pos Notice<br>
+except that they are detections of bursts and transients found in the BAT Slew data.<br>
+The Harvard group (Antonio Copete and Josh Grindlay) have developed automated<br>
+pipeline processing on the BAT event-by-event data captured during the intervals<br>
+when Swift is slewing (~75 slews per day, 100-250 sec per slew).<br>
+Burst and Transient detections are sent to GCN for distribution.<br>
+Time delays are 1-14 hrs.<br>
+There will be about 1 "gold plated" detection per 3 months, and<br>
+about 4(tbr) "silver plated" detections per month.<br>
+The location uncertainties will range from 1-7 arcmin (brightest to dimmest).<br>
+The BATSS processing looks for point sources in three energy ranges:<br>
+Soft (15-50 keV),<br>
+Hard (50-150 keV), and<br>
+Broad (15-150 keV).<br>
+There are 10 Trigger Criteria:<br>
+<pre>
+INDEX  CRITERIA                                                              COMMENT
+1      Undef                                                                 Undef
+2      Undef                                                                 Undef
+3      Undef                                                                 Undef
+4      Undef                                                                 Undef
+5      S(15-50) > 6.5 sigma OR H(50-150) > 6.5 sigma                         High confidence of reality (silver-plated).
+6      Non-simultaneous detections > 4.0 sigma over more than an orbit       Transient (ie too long for a GRB)
+7      Non-simultaneous detections > 4.0 sigma within an orbit               Transient (ie too long for a GRB)
+8      Simul (S(15-50) OR H(50-150)) > 6.0 sigma AND B(15-150) > 4.0 sigma   High confidence of reality (silver-plated).
+9      Simul (S(15-50) OR H(50-150)) > 4.0 sigma AND B(15-150) > 6.0 sigma   High confidence of reality (silver-plated).
+10     Simul S(15-50) > 4.0 sigma AND H(50-150) > 4.0 sigma                  Very high confidence of reality (gold-plated).
+</pre>
+<a name="tc2zz"></a>
+<p>
+19) <b>SWIFT_BAT_Monitor_Alert Notice</b> announces "outburst" increases of known sources<br>
+that are routinely monitored by the BAT instrument while conducting its hard x-ray survey.<br>
+When one of these sources goes into outburst and its flux increases by at least 8.0 sigma,<br>
+an Alert is issued.  The Alerts contain the name of the source, the RA,Dec coordinates,<br>
+the current flux and the pre-outburst baseline flux of the source (in cnts/cm2/sec), and<br>
+the increase in sigma units.  A URL to the lightcurve of the source is also given (showing recent<br>
+behavior and the current outburst).  Actually, in the full-format email notices the full URL is given,<br>
+but in the socket packets for space limitation reasons only the unique part of the url is given.<br>
+To form the full URL, you must prefix the given partial-URL with this:  http://swift.gsfc.nasa.gov/docs/swift/results/transients/ .<br>
+Since the primary intended recipient of these Monitor Alerts is robotic telescopes,<br>
+the threshold has been set low to get the outburst as soon as possible, but it also means<br>
+that there will be some false positives.  The expected percentage is ~20%.<br>
+More information about the entire Swift-BAT Hard X-ray Monitoring program<br>
+can be found <a href=http://swift.gsfc.nasa.gov/docs/swift/results/transients/> here</a>.<br>
+<a name="tc2zz2"></a>
+<p>
+20) <b>SWIFT_BAT_SUB_SUB Notice</b> contains a location of a peak with significances in the 3.8 - 6.5 sigma range<br>
+found in one of the many images made during normal operations within BAT.<br>
+Individual notices are issued for each peak found in each image.<br>
+More information can be found <a href=swift_sub_sub_threshold.html> here</a>.<br>
+<a name="tc2zz3"></a>
+<p>
+21) <b>SWIFT_BAT_KNOWN Notice</b> contains locations of peaks in the image domain<br>
+with locations that match sources in the on-board catalog.<br>
+More information can be found <a href=swift_sub_sub_threshold.html> here</a>.<br>
+
+<p>
+The next 2 Notices are in the miscellaneous category:<br>
+<br>
+<a name="tc2y"></a>
+22) <b>BAT_Pos_Test Notice</b> is identical in format and content to the BAT_Pos Notice<br>
+except that they contain a computer-generated RA,Dec location and all the other fields.<br>
+These "test" Notices are generated by the GCN computer every ~2.8 hrs.<br>
+They allow the receiving site to "practice" on the BAT_Pos Notice.<br>
+<a name="tc2z"></a>
+<p>
+23) <b>SWIFT_Pointing_Dir Notice</b> contains the next pointing direction of the s/c (bore-sight of the NFIs & BAT).<br>
+It is issued 30-60 seconds before the actual slew.<br>
+Obviously, only the PrePlanned Targets (PPT) targets can be "announced" with this type of Notice<br>
+(the Automated Targets (ATs) can not be predicted -- they account for ~15% of the on-orbit time).<br>
+This allows the recipient site to "track" the pointing direction of the s/c and<br>
+therefore be that much closer to any burst detected by BAT (thereby minimizing the site's slew times).<br>
+<p>
+
+<a name="tc3"></a>
+<b>Positions and Time_delays</b>
+<p>
+The automated on-board Swift flight software
+will generate GRB notifications, positions, lightcurves, spectra, and images in real time.
+(In addition, human-involved analyses of the data may sometimes result
+in a revised position within a few hours after the burst.)
+There is an important change from the past to be noted: the Swift socket packets
+that contain RA,Dec positions are now in J2000 epoch (whereas all the previous missions
+contained Current epoch).
+The timescales and localization precisions of the various Notice types
+are as follows:
+<p>
+<pre>
+               TIME SINCE    LOCATION
+TYPE           BURST         PRECISION  COMMENTS
+=========      ============  ========== ========
+Flight-generated versions:
+=========      ============  ========== ========
+BAT_Alert      ~7sec         n/a        First Notice, Timestamp Alert
+BAT_QL_Pos     13-30sec      1-3'       QuickLook Position Notice (subset of BAT_POS info)
+BAT_Pos        13-30sec      1-3'       First Position Notice, the BAT Position
+BAT_PosNack    30-60sec      n/a        Only if no position was found
+BAT_SubThresh  13-30sec      1-4'       Sub-threshold triggers (Position)
+BAT_LC         ~220sec       1-3'       Lightcurve (also has the position)
+FOM_Obs        14-41sec      1-3'       FOM decision: Observe or Not
+SC_Slew        14-41sec      1-3'       Spacecraft decision: Slew or Not
+XRT_Pos        30-80sec      <7"        XRT afterglow location
+XRT_PosNack    30-80sec      n/a        Could not find an XRT afterglow location
+XRT_Image      31-81sec      <7"        2x2 arcmin FOV (5-30sec integration)
+XRT_Spectrum   40-81sec      n/a        Spectrum (few-to-100 sec integration)
+XRT_Lightcurve 141-910sec    n/a        The x-ray lightcurve (106 to 826 sec)
+UVOT_SrcList   ~260sec       n/a        Thresholded pixel clusters
+UVOT_Image     ~320sec       n/a        All pixels from an 80x80 pixel subarray
+UVOT_Pos       1-3 hrs       <2"        UVOT afterglow location (Gnd-generated only)
+UVOT_PosNack   1-3 hrs       n/a        Could not find an UVOT afterglow location
+=========      ============  ========== ========
+Ground-processed versions:
+=========      ============  ========== ========
+BAT_LC         ~225sec       1-3'       Lightcurve (also has the position)
+XRT_Image      40-70sec      <6"        2x2 arcmin FOV (~10sec integration)
+XRT_Spectrum   50-90sec      n/a        The spectrum from that integration (~10 sec)
+UVOT_SrcList   ~280sec       n/a        Thresholded pixel clusters
+UVOT_Image     ~340sec       n/a        All pixels from an 80x80 pixel subarray
+=========      ============  ========== ========
+Special versions:
+=========      ============  ========== ========
+BAT_Slew_Pos   1-6 hrs       1-7'       Bursts & Transient found in the slew data (BATSS)
+BAT_Monitor    1-12 hrs      1-7'       Flares from known sources
+BAT_SUB_SUB    1-12 hrs      1-7'       Sub-Sub-Threshold blips in all image produced on-board
+BAT_KNOWN      1-12 hrs      1-7'       Peaks of known-sources found in all image produced on-board
+</pre>
+<p>
+<a name="tc4"></a>
+<b>Sequence of Activities</b>
+<p>
+The sequence of activities for a typical burst follows:<br>
+
+1) The BAT instrument detects a "trigger" (either a "rate trigger" or an "image trigger").<br>
+Since many trigger criteria are evaluated every 64 msec,<br>
+the one with the largest signal-to-noise significance<br>
+(above a minumum acceptable threshold, in that evaluation cycle)<br>
+is the one used to select the data interval sent<br>
+to the DSP for the image calculation (FFT, Mask_Convolution, InvFFT).<br>
+2) This image calculation(s) takes 6-7 sec (or multiples thereof).<br>
+3) The image is scanned for a point-source.<br>
+If a point-source is found (and it is not a known source (in the BAT on-board catalog)),<br>
+then a BAT_POS Notice is sent to TDRSS (and on to GCN and the World).<br>
+If a point-source is not found, then the trigger-search task is notified,<br>
+and it continues to process more rate data to find a higher-significance trigger criterion.<br>
+If it finds one, it sends that data set to the DSP for the same image calculation and pt-source search.<br>
+If after ~30 seconds, no position is found, then a BAT_Pos_Nack Notice is generated.<br>
+and the BAT instrument goes back into staring and waiting-for-a-new-trigger mode.<br>
+This ends the sequence.<br>
+In addition to these "rate increase plus image-domain point source" triggers,<br>
+there are also image-domain-only triggers.  Every 64 sec, a non-background-subtracted image<br>
+is made and searched for point sources tht do not match anything in the on-board catalog.<br>
+If one is found, then a BAT_POS Notice is sent to TDRSS (and on to GCN and the World).<br>
+4) For all successful triggers, a lightcurve in the standard 4 energy bands<br>
+is formed and transmitted through TDRSS.  This is done 3 separate time ranges.<br>
+The last one to arrive on the ground (at ~T+186sec) is combined within GCN<br>
+with the other 2 previous time segments and distributed.<br>
+5) Meanwhile, the FOM has been deciding if the burst is worth observing, and<br>
+if the s/c thinks it is safe to slew to the new burst position.<br>
+If both are found to be true, then the s/c slews for about 20-75 sec (depends on slew distance).<br>
+6) After the slew has settled on target, the NFIs start their standard new_burst<br>
+observing sequence.  The XRT takes a quick 0.1or2.5-sec integration<br>
+and processes that image on-board looking for a point source.<br>
+Any point source in the FOV is assumed to be the burst/afterglow.<br>
+It sends that position through TDRSS as the XRT_Position Notice.<br>
+If no position is found, then the XRT_Pos_Nack is issued,<br>
+and the Image, Spectrum and Lightcurve are always issued.<br>
+7) The image accumulated in the previous step is also sent down TDRSS as the XRT Image Notice.<br>
+8) After the XRT_Image accumulation, the XRT starts the Spectrum accumulations<br>
+(first the LRPD spectrum then the WT spectrum). The durations of the accumulations<br>
+depend on the flux of the afterglow source.<br>
+9) After the s/c slew has settled on target, the UVOT takes a quick 100-sec integration.<br>
+This image is scanned for clusters of pixels above a selectable threshold level.<br>
+That list of pixel clusters is transmitted through TDRSS as the UVOT Source List.<br>
+10) An 80x80 pixel subarray of that same image is transmitted with full pixel resolution<br>
+(ie no thresholding) as the UVOT Image Notice. (The 80x80 pixels may or maynot have pre-binning.<br>
+If none, then it is 40x40arcsec, else it is 320x320arcsec.)<br>
+11) The UVOT Position Notice is issued after ground-processing and humans have looked<br>
+at the TDRSS data products.  If no afterglow is detected, then a UVOT_Pos_Nack is issued.<br>
+
+<p>
+The Swift-to-GCN-to-World Procedure:<br>
+<u>Notices:</u> GCN receives the Swift messages directly from the Swift spacecraft (through a TDRSS tlm connection),<br>
+reformats the messages into the standard GCN_Notice formats, and<br>
+distributes them to the sites using the usual distribution methods and filtering.<br>
+The total amount of time from the TDRSS transmitter on the s/c to the output port<br>
+on the GCN system is in the 1-3 sec range.<br>
+<u>Circulars:</u> For each trigger, members from each Instrument team are paged<br>
+and respond by dialing into the Burst Response Telecon.<br>
+The first decision made in the telcon is: Is this trigger a real GRB?<br>
+If it was correctly identified as a known source, then nothing further is done.<br>
+If it is a false-positive (noise, etc), then a Retraction Notice and sometimes a Circular are issued.<br>
+If it is a real GRB, then an Initial Circular is issued that contains said dcision,<br>
+a description of the prompt BAT lightcurve, and improved XRT position and a statement<br>
+about x-ray variability (fading, etc), and UVOT information (detection or uppler limit).<br>
+All of this is based only on the TDRSS data products.<br>
+This <a href=gcn3_archive.html>Circular</a> is issued with 20-40 min after the burst.<br>
+Then 1-8 hrs later, after some/all of the full data set (via Malindi) has been received and processed,<br>
+a set of 3 "second/refined" Circulars is issued (one from each instrument)<br>
+that contains more detailed information about the burst (improved positions, spectral information,<br>
+fluence, etc.).<br>
+<u>Reports:</u> After all the Swift follow-up observations have been completed (2-10 days),<br>
+a <a href=report_archive.html>Report</a> is issued.  This contains slight improvments over the information in the Refined Circulars<br>
+plus lightcurves.<br>
+<p>
+
+<p>
+<a name="tc4a"></a>
+<b>Ack, Nack, Update, Retraction</b>
+<p>
+All 3 instruments have Position Notices (ie RA,Dec locations of the burst, transient, or afterglow).<br>
+They come in 4 variations:  Ack,  Nack,  Update,  and  Retraction.<br>
+This section describes the contents of these 4 variations and how they are used/occur in practice.<br>
+<pre>
+ACK          A position was found.<br>
+NACK         A position was NOT found.<br>
+UPDATE       A revised position was determined (after the initial ACK position).<br>
+RETRACTION   The initial identification of a burst/transient/afterglow is no longer true, ie retracting it.
+</pre>
+<p>
+The table below shows which variation from each instrument is produced on-board (ie F for flight)<br>
+and which are produced on the ground (G).<br>
+<pre>
+INST      ACK       NACK      UPDATE      RETRACTION
+====      =====     ====      ======      ==========
+BAT       F & G      F         G             G
+
+XRT       F & G      F         G             G
+
+UVOT          G      G         G             G
+</pre>
+Theoretically,  all combinations/sequences of these 4 variations are possible,<br>
+but in reality many of those combinations would be too complicated for the recipients to understand<br>
+what is really being put forward by the instruments teams.  Hence, after the 2nd issuance,<br>
+the description of what is going on with a given trigger will transition over to the Circulars form<br>
+for getting the information out to the public.<br>
+<p>
+<a name="tc5"></a>
+<b>Formats</b>
+<p>
+Samples of the E-mail, Cell/Pager, Short-form Cell/Pager, & Subject-only
+distribution methods of the 26 GCN/Swift Notice types
+are included below.
+The format is very similar to the other spacecraft-instrument sources
+of GRB locations -- the GCN-standard "TOKEN: value" format.<br>
+<p>
+The email format has a new feature for the Swift mission -- using email attachments
+to actually include the image, spectrum, or lightcurve
+in the sending of the email to the recipient.  The recipient can choose which format 
+for the attachment: Text, Postscript, GIF, JPEG, PDF, or FITS.  See the table below
+for which Notice-types have which attachment-formats.
+The attachment technique within GCN works such that you will receive all the various
+attachments in the same format. (If you have elected to receive GIF, then all the
+images, spectra, and lightcurves will be in the GIF format.  You can not 
+get some in GIF and others in FITS.)
+<p>
+The socket packet contents and format are similar to the other
+mission-specific packet types
+and are described in detail in the <a href="sock_pkt_def_doc.html">socket
+packet definition document</a>. This document also has explanations
+of the various fields in the packet (their content, values, and
+implications for use),
+and those same fields are manifested in the email and cell/pager formats.
+(Therefore, it is useful for email/cell/pager recipients to read the 
+<a href="sock_pkt_def_doc.html">socket packet definition document</a>
+to understand the contents of the email/cell/pager notifications are.)
+
+<p>
+<pre>
+NUM  TYPE                SOCKET   EMAIL  EMAIL  EMAIL EMAIL  EMAIL  EMAIL  EMAIL  PAGER/CELL
+                                  w/Txt  w/PS   w/GIF w/JPEG w/PDF  w/FITS        (all 4 variants)
+
+60   BAT_Alert           P        B                                               B
+97   BAT_QL_Pos          P
+61   BAT_Pos             P        B                                               B
+62   BAT_Pos_Nack        P        B                                               B
+98   BAT_SubThresh_Pos   P        B                                               B
+63   BAT_Lightcurve      P+U      B+U    A1     A1    A1     A1    A1     A1      B+U
+65   FOM_To_Observe      P        B                                               B
+66   SC_To_Slew          P        B                                               B
+67   XRT_Pos             P        B                                               B
+71   XRT_Pos_Nack        P        B             
+68   XRT_Spectrum        P+U      B+U    A            A      A     A      A       B+U
+69   XRT_Image           P+U      B+U                 A      A     A      A       B+U
+70   XRT_Lightcurve      P+U      B+U    A            A      A     A      A       B+U
+72   UVOT_Image          P+U      B+U                 A2     A2    A2     A2      B+U
+73   UVOT_SrcList        P+U      B+U                 A2     A2    A2     A2      B+U
+81   UVOT_Pos            P        B                                               B
+89   UVOT_Pos_Nack       P        B                                               B
+84   BAT_Trans           P        B                                               B
+ 
+76   BAT_Proc_Lightcurve P+U      B+U    A            A      A     A      A       B+U
+77   XRT_Proc_Spectrum   P+U      B+U    A            A      A     A      A       B+U
+78   XRT_Proc_Image      P+U      B+U                 A      A     A      A       B+U
+79   UVOT_Proc_Image     P+U      B+U                 A2     A2    A2     A2      B+U
+80   UVOT_Proc_SrcList   P+U      B+U                 A2     A2    A2     A2      B+U
+
+82   BAT_Pos_Test        P        B                                               B
+83   SC_PointDir         P        B                                               B
+
+99   BAT_Slew_Pos        P        B                                               B
+
+133  BAT_Monitor         P        B                                               B
+140  BAT_Sub_Sub         P
+141  BAT_Known           P
+
+where:
+P = Packet (the GCN-standard 40 longword socket packet format).  Also available in XML VOEvent format for XML_Sockets and VOEvent server sockets.
+B = Body of email (the GCN-standard "TOKEN: value" format)
+U = URL (the URL is contained in the packet and the body of the email)
+A = Attachment (the actual data product is optionally attached to the email)
+A1 = Attachment (the BAT_LC has 2 attachments: the LC and the s/c_attitude files)
+A2 = Attachment (the UVOT_Image/_SrcList have 4 attachments: the image, 2 src catalog lists, and ??? files)
+</pre>
+<p>
+<a name="tc6"></a>
+<b>Filtering</b>
+<p>
+Sites can elect to receive each of the 29 Swift Notice types on a Notice-by-Notice basis.<br>
+There is a separate dis/enable bit for each type.<br>
+This filtering applies to all the existing distribution methods/media.<br>
+<p>
+<a name="tc7"></a>
+<b>Error Boxes</b>
+<p>
+The uncertainty in the location will depend on:<br>
+(a) the burst_intensity,<br>
+(b) its position in the FOV (only in BAT), and <br>
+(c) the relative locations and intensities of other sources in the BAT FOV (BAT positions only).<br>
+The typical error is:<br>
+1-3 arcmin (diameter, 90% containment) for the BAT_Position Notice,<br>
+~7 arcsec (diameter, 90% containment) for on-board generated XRT_Position Notices,<br>
+~4 arcsec (diameter, 90% containment) for initial ground-generated XRT_Position Notices,<br>
+~3 arcsec (diameter, 90% containment) for ground-generated UVOT-pointing-corrected XRT_Position Notices, and<br>
+~2 arcsec (diameter, ??% containment) for the UVOT_Position Notices.<br>
+The systematic uncertainty depends on the satellite attitude knowledge
+and varies from 0 arcsec to TBD arcsec (diameter) in the worst situations.
+The errors quoted in the Position Notices includes only the statistical
+contribution.<br>
+<p>
+<a name="tc8"></a>
+<b>Test Notices</b>
+<p>
+To allow sites to "practice" on Swift Notices,
+there is Swift Test Notice.  The BAT_GRB_POS_TEST Notice duplicates
+the BAT_GRB_POS Notice (all socket packet, email, and cell/page formats).
+Sites can elect to receive this Test Notice.
+These Test Notices are issued every ~2.8 hours.
+The RA,Dec positions rotate through a grid on the Northern & Southern celestial skies.
+So far, this is the only "test" version Notice -- none of the 28 other Notices have "test" versions.
+<p>
+<a name="tc8a"></a>
+<b>Observing Strategy</b>
+<p>
+The Swift spacecraft pointing direction (ie FOV) is always known
+via the POINTDIR Notices.
+It is therefore possible to minimize the slewing time of a ground-based telescope
+by having it looking at the RA,Dec listed in the POINTDIR Notices.
+Further, the telescope can continuously tile the FOV in a "patrol" mode
+all night long thereby obtaining images just prior to the burst.
+This is most suitable for automated wide-FOV systems.
+<p>
+<a name="tc9a"></a>
+<b>Subthreshold Triggers</b>
+<p>
+Swift-BAT can now trigger on a lower range of image-domain significances.<br>
+These are the so-called Subthreshold triggers.<br>
+More information can be found <a href="subthreshold.html">here.</a>.<br>
+These subthreshold have been discontinued by the Swift Team.<br>
+There is also the "sub-sub" threshold locations -- see above.<br>
+<p>
+<a name="tc9b"></a>
+<b>Recognition</b>
+<p>
+Sites are encouraged to acknowledge Swift and GCN in their publications
+based on follow-up observations using these GCN/Swift locations.
+<p>
+<a name="tc10"></a>
+<b>Further Help</b>
+<p>
+For further information on this, please contact<br>
+<a href="mailto:scott.barthelmy@gsfc.nasa.gov">Scott Barthelmy (for GCN issues)</a>,<br>
+or see the<br>
+<a href="http://swift.gsfc.nasa.gov/docs/swift/swiftsc.html">Swift (main/US site)</a>, and<br>
+<a href="http://swift.asdc.asi.it">Swift (Italian site)</a>, and<br>
+<a href="http://www.swift.ac.uk">Swift (UK site)</a>, and<br>
+<a href="http://www.nasa.gov/mission_pages/swift/main/index.html">Swift (NASA site)</a>, and<br>
+<a href="http://swift.gsfc.nasa.gov/docs/swift/sdc">Swift (SDC site)</a>, and<br>
+and<br>
+<a href="http://gcn.gsfc.nasa.gov/">these GCN web pages</a>, and<br>
+<a href="http://gcn.gsfc.nasa.gov/swift_grbs.html">GCN/Swift GRB table</a>.<br>
+<p>
+<hr>
+<a name="tc11"></a>
+<b>E-mail Examples</b>
+<p>
+Examples of the 25 Notice types of the e-mail formats are shown below.<br>
+The "/////" divider bars are NOT part of the messages.
+<p>
+Do not take the actual values shown in these examples as real GRBs.<br>
+While based on ground-test data from the mission,<br>
+they have been adjusted to provide a broader representation<br>
+of the various combinations of fields and value ranges.
+<p>
+For those sites/people that use demons and/or incoming e-mail filters (e.g. procmail),<br>
+the "Subject" lines for the all notice types are constant.<br>
+The subject-line strings are (respectively):<br>
+The 'raw' versions:<br>
+GCN/SWIFT_BAT_GRB_ALERT<br>
+GCN/SWIFT_BAT_QL_POSITION<br>
+GCN/SWIFT_BAT_GRB_POSITION   (same for both the BAT_Pos and BAT_Pos_Test Notices)<br>
+GCN/SWIFT_BAT_TRANSIENT_POSITION<br>
+GCN/SWIFT_BAT_GRB_POSITION_UPDATE<br>
+GCN/SWIFT_BAT_GRB_POSITION_RETRACTION<br>
+GCN/SWIFT_BAT_GRB_POSITION_NACK<br>
+GCN/SWIFT_BAT_GRB_SUBTHRESHOLD_POSITION<br>
+GCN/SWIFT_BAT_GRB_SUBTHRESHOLD_POSITION_UPDATE<br>
+GCN/SWIFT_BAT_GRB_SUBTHRESHOLD_POSITION_RETRACTION<br>
+GCN/SWIFT_BAT_LIGHTCURVE<br>
+GCN/SWIFT_FOM_OBSERVE<br>
+GCN/SWIFT_SC_SLEW<br>
+GCN/SWIFT_XRT_POSITION<br>
+GCN/SWIFT_XRT_POSITION_UPDATE<br>
+GCN/SWIFT_XRT_POSITION_RETRACTION<br>
+GCN/SWIFT_XRT_IMAGE<br>
+GCN/SWIFT_XRT_SPECTRUM<br>
+GCN/SWIFT_XRT_LIGHTCURVE<br>
+GCN/SWIFT_UVOT_SRCLIST<br>
+GCN/SWIFT_UVOT_IMAGE<br>
+GCN/SWIFT_UVOT_POSITION<br>
+GCN/SWIFT_UVOT_POSITION_UPDATE<br>
+GCN/SWIFT_UVOT_POSITION_RETRACTION<br>
+GCN/SWIFT_UVOT_POSITION_NACK<br>
+The 'processed' versions:<br>
+GCN/SWIFT_BAT_LIGHTCURVE_PROCESSED<br>
+GCN/SWIFT_XRT_IMAGE_PROCESSED<br>
+GCN/SWIFT_XRT_SPECTRUM_PROCESSED<br>
+GCN/SWIFT_UVOT_SRCLIST_PROCESSED<br>
+GCN/SWIFT_UVOT_IMAGE_PROCESSED<br>
+GCN/SWIFT_UVOT_POSITION<br>
+The 'special' notices:<br>
+GCN/SWIFT_BAT_SLEW_POSITION<br>
+GCN/SWIFT_BAT_SLEW_POSITION_UPDATE<br>
+GCN/SWIFT_BAT_SLEW_POSITION_RETRACTION<br>
+The 'misc' notices:<br>
+GCN/SWIFT_POINT_DIR<br>
+GCN/SWIFT_BAT_MONITOR_ALERT<br>
+GCN/SWIFT_BAT_SUB_SUB_THRESHOLD_POSITION<br>
+GCN/SWIFT_BAT_KNOWN_POSITION<br>
+<a name="tc11a"></a>
+<pre>
+//////////////////////// BAT_Alert e-mail format ///////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 21:31:42 UT
+NOTICE_TYPE:    Swift-BAT Alert
+TRIGGER_NUM:    100004,   Seg_Num: 0
+GRB_DATE:       13186 TJD;   182 DOY;   04/06/30
+GRB_TIME:       77478.27 SOD {21:31:18.27} UT
+TRIGGER_INDEX:  10027
+RATE_SIGNIF:    20.71 [sigma]
+COMMENTS:       SWIFT-BAT GRB Alert.
+</pre>
+<a name="tc11a1"></a>
+<pre>
+//////////////////////// BAT_QuickLook e-mail format ///////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Sat 02 Apr 11 00:14:19 UT
+NOTICE_TYPE:     Swift-BAT Quick-Look Position
+TRIGGER_NUM:     450545,   Seg_Num: 0
+GRB_RA:          197.419d {+13h 09m 41s} (J2000),
+                 197.529d {+13h 10m 07s} (current),
+                 196.929d {+13h 07m 43s} (1950)
+GRB_DEC:         +61.242d {+61d 14' 30"} (J2000),
+                 +61.182d {+61d 10' 55"} (current),
+                 +61.508d {+61d 30' 28"} (1950)
+GRB_ERROR:       3.00 [arcmin radius, statistical only]
+GRB_DATE:        15653 TJD;    92 DOY;   11/04/02
+GRB_TIME:        784.00 SOD {00:13:04.00} UT
+RATE_SIGNIF:     0.00 [sigma]
+SOLN_STATUS:     0x0
+FLAGS:           0x3
+MERIT:           100.00
+SUN_POSTN:        10.96d {+00h 43m 50s}   +4.71d {+04d 42' 39"}
+SUN_DIST:        113.91 [deg]   Sun_angle= 11.6 [hr] (West of Sun)
+MOON_POSTN:      352.91d {+23h 31m 37s}   +2.35d {+02d 21' 03"}
+MOON_DIST:       113.70 [deg]
+MOON_ILLUM:      2 [%]
+GAL_COORDS:      119.04, 55.75 [deg] galactic lon,lat of the event
+ECL_COORDS:      154.74, 59.50 [deg] ecliptic lon,lat of the event
+COMMENTS:        SWIFT-BAT Quick-Look Position.
+COMMENTS:        This was of sufficient merit to become the new Automated Target;
+COMMENTS:        but if the Current PPT has a greater merit, then we will not request a slew.
+COMMENTS:        FOM will request the s/c to slew.
+COMMENTS:        The S/C has yet to make its decision about safe to slew or not.
+COMMENTS:        This does not match any source in the ground catalog.
+</pre>
+<a name="tc11b"></a>
+<pre>
+//////////////////////// BAT_Pos (or BAT_SubThreshold) e-mail format ///////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:46:36 UT
+NOTICE_TYPE:    Swift-BAT GRB Position        (or   Swift-BAT GRB Sub-Threshold Position)
+TRIGGER_NUM:    100004,   Seg_Num: 0
+GRB_RA:          88.67d {+05h 54m 42s} (J2000),
+                 88.68d {+05h 54m 44s} (current),
+                 88.20d {+05h 52m 49s} (1950)
+GRB_DEC:        -31.27d {-31d 16' 10"} (J2000),
+                -31.27d {-31d 16' 09"} (current),
+                -31.28d {-31d 16' 37"} (1950)
+GRB_ERROR:      3.00 [arcmin radius, statistical only]
+GRB_INTEN:      893 [cnts]    Peak=123 [cnts/sec] 
+BKG_INTEN:      364 [cnts]
+BKG_TIME:       77450.00 SOD {21:31:00.00} UT
+BKG_DUR:        16 [sec]
+GRB_DATE:       13186 TJD;   182 DOY;   04/06/30
+GRB_TIME:       77478.27 SOD {21:31:18.27} UT
+GRB_PHI:        123.10 [deg]
+GRB_THETA:       11.54 [deg]
+TRIGGER_INDEX:  129
+SOLN_STATUS:    3
+RATE_SIGNIF:    12.31 [sigma]
+IMAGE_SIGNIF:   9.80 [sigma]
+MERIT_PARAMS:    +1  -2  +3  -4  +5  -6  +7  -8  +9 -10 
+SUN_POSTN:      281.57d {+18h 46m 17s}  -23.01d {-23d 00' 44"}
+SUN_DIST:       124.33 [deg]
+MOON_POSTN:     351.51d {+23h 26m 01s}   -8.87d {-08d 52' 19"}
+MOON_DIST:       91.46 [deg]
+GAL_COORDS:     236.79,-25.03 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:      88.04,-54.70 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:       SWIFT-BAT GRB Coordinates.
+COMMENTS:       This is a rate trigger.
+COMMENTS:       A point_source was found.
+COMMENTS:       This does not match any source in the on-board catalog.
+COMMENTS:       This is a GRB.
+</pre>
+<a name="tc11c2"></a>
+<pre>
+//////////////////////// BAT_Transient e-mail format ///////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Tue 08 Apr 08 21:34:13 UT
+NOTICE_TYPE:     Swift-BAT Transient Position
+TRIGGER_NUM:     308797,   Seg_Num: 0
+GRB_RA:          264.842d {+17h 39m 22s} (J2000),
+                 264.975d {+17h 39m 54s} (current),
+                 264.039d {+17h 36m 09s} (1950)
+GRB_DEC:         -30.366d {-30d 21' 55"} (J2000),
+                 -30.370d {-30d 22' 10"} (current),
+                 -30.339d {-30d 20' 18"} (1950)
+GRB_ERROR:       3.00 [arcmin radius, statistical only]
+GRB_INTEN:       0 [cnts]    Image_Peak=5125 [image_cnts]
+TRIGGER_DUR:     320.000 [sec]   (=5.3 [min])
+TRIGGER_INDEX:   20000     E_range: 15-50 keV
+BKG_INTEN:       0 [cnts]
+BKG_TIME:        0.00 SOD {00:00:00.00} UT
+BKG_DUR:         0 [sec]
+GRB_DATE:        14564 TJD;    99 DOY;   08/04/08
+GRB_TIME:        77293.29 SOD {21:28:13.29} UT
+GRB_PHI:         -157.24 [deg]
+GRB_THETA:        11.61 [deg]
+SOLN_STATUS:     0x111
+RATE_SIGNIF:     0.00 [sigma]
+IMAGE_SIGNIF:    7.83 [sigma]
+MERIT_PARAMS:     +0  +1  +0  +6  +1  -2  +0  +1 +40  +1 
+SUN_POSTN:        17.92d {+01h 11m 41s}   +7.60d {+07d 35' 51"}
+SUN_DIST:        113.59 [deg]   Sun_angle= 7.5 [hr] (West of Sun)
+MOON_POSTN:       54.05d {+03h 36m 11s}  +24.57d {+24d 34' 29"}
+MOON_DIST:       152.05 [deg]
+MOON_ILLUM:      11 [%]
+GAL_COORDS:      358.07,  0.40 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:      265.52, -7.01 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT-BAT Transient Coordinates.  
+COMMENTS:        This is an image trigger.  (The RATE_SIGNIF & BKG_{INTEN, TIME, DUR} are undefined.)  
+COMMENTS:        A point_source was found.  
+COMMENTS:        This does not match any source in the on-board catalog.  
+COMMENTS:        This matches a source in the ground catalog: IGR17391-3021,   delta=0.045 [deg].  
+COMMENTS:        This is not a GRB -- it is a hard x-ray transient.  
+COMMENTS:        This trigger occurred at longitude,latitude = 146.22,1.27 [deg].
+</pre>
+<a name="tc11c"></a>
+<pre>
+//////////////////////// BAT_Pos_Nack e-mail format ////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 21:31:59 UT
+NOTICE_TYPE:    Swift-BAT GRB Nack-Position
+TRIGGER_NUM:    100005,   Seg_Num: 0
+GRB_DATE:       13186 TJD;   182 DOY;   04/06/30
+GRB_TIME:       77478.27 SOD {21:31:18.27} UT
+TRIGGER_INDEX:  129
+SOLN_STATUS:    0
+RATE_SIGNIF:    20.71 [sigma]
+IMAGE_SIGNIF:   0.00 [sigma]
+MERIT_PARAMS:    +0  +0  +0  +0  +0  +0  +0  +0  +0  +0
+COMMENTS:       SWIFT-BAT GRB Nack Position.
+COMMENTS:       A point_source was not found.
+</pre>
+<a name="tc11d"></a>
+<pre>
+//////////////////////// BAT_LC e-mail format //////////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Fri 18 Mar 05 15:47:13 UT
+NOTICE_TYPE:     Swift-BAT GRB Lightcurve
+TRIGGER_NUM:     111529,   Seg_Num: 0
+GRB_RA:           49.678d {+03h 18m 43s} (J2000),
+                  49.722d {+03h 18m 53s} (current),
+                  49.261d {+03h 17m 03s} (1950)
+GRB_DEC:         -46.403d {-46d 24' 11"} (J2000),
+                 -46.385d {-46d 23' 03"} (current),
+                 -46.584d {-46d 35' 02"} (1950)
+GRB_DATE:        13447 TJD;    77 DOY;   05/03/18
+GRB_TIME:        56677.17 SOD {15:44:37.17} UT
+TRIGGER_INDEX:   69
+GRB_PHI:         -78.86 [deg]
+GRB_THETA:        22.20 [deg]
+DELTA_TIME:      19.00 [sec]
+LC_URL:          sw00111529000msb.lc
+SUN_POSTN:       358.30d {+23h 53m 12s}   -0.74d {-00d 44' 14"}
+SUN_DIST:         63.93 [deg]
+MOON_POSTN:       98.42d {+06h 33m 42s}  +28.27d {+28d 16' 09"}
+MOON_DIST:        86.67 [deg]
+MOON_ILLUM:      58 [%]
+GAL_COORDS:      256.48,-55.24 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:       23.53,-60.88 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT-BAT GRB Lightcurve.  
+COMMENTS:        This does not match any source in the ground catalog. 
+</pre>
+<a name="tc11e"></a>
+<pre>
+//////////////////////// FOM_Observe e-mail format /////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Fri 18 Mar 05 15:45:37 UT
+NOTICE_TYPE:     Swift-FOM Will_Observe
+TRIGGER_NUM:     111529,   Seg_Num: 0
+GRB_RA:           49.678d {+03h 18m 43s} (J2000),
+                  49.722d {+03h 18m 53s} (current),
+                  49.261d {+03h 17m 03s} (1950)
+GRB_DEC:         -46.403d {-46d 24' 11"} (J2000),
+                 -46.385d {-46d 23' 03"} (current),
+                 -46.584d {-46d 35' 02"} (1950)
+GRB_DATE:        13447 TJD;    77 DOY;   05/03/18
+GRB_TIME:        56676.60 SOD {15:44:36.60} UT
+TRIGGER_INDEX:   69
+RATE_SIGNIF:     16.82 [sigma]
+FLAGS:           0x3
+MERIT:           100.00
+SUN_POSTN:       358.30d {+23h 53m 12s}   -0.74d {-00d 44' 14"}
+SUN_DIST:         63.93 [deg]
+MOON_POSTN:       98.42d {+06h 33m 42s}  +28.27d {+28d 16' 09"}
+MOON_DIST:        86.67 [deg]
+MOON_ILLUM:      58 [%]
+GAL_COORDS:      256.48,-55.24 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:       23.53,-60.88 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT Figure-of-Merit decision.  
+COMMENTS:        This was of sufficient merit to become the new Automated Target.  
+COMMENTS:        FOM will request the s/c to slew.  
+COMMENTS:        The S/C has yet to make its decision about safe to slew or not.  
+COMMENTS:        This does not match any source in the ground catalog.
+</pre>
+<a name="tc11f"></a>
+<pre>
+//////////////////////// SC_Slew e-mail format /////////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Fri 18 Mar 05 15:45:39 UT
+NOTICE_TYPE:     Swift-S/C Will_NOT_Slew
+TRIGGER_NUM:     111529,   Seg_Num: 0
+GRB_RA:           49.678d {+03h 18m 43s} (J2000),
+                  49.722d {+03h 18m 53s} (current),
+                  49.261d {+03h 17m 03s} (1950)
+GRB_DEC:         -46.403d {-46d 24' 11"} (J2000),
+                 -46.385d {-46d 23' 03"} (current),
+                 -46.584d {-46d 35' 02"} (1950)
+GRB_DATE:        13447 TJD;    77 DOY;   05/03/18
+GRB_TIME:        56676.60 SOD {15:44:36.60} UT
+TRIGGER_INDEX:   69
+RATE_SIGNIF:     16.82 [sigma]
+SLEW_QUERY:      0x2
+WAIT_TIME:       83.00 [sec]
+OBS_TIME:        0.00 [sec]
+INST_MODES:      BAT: 0   XRT: 0   UVOT: 32768
+MERIT:           100.00
+SUN_POSTN:       358.30d {+23h 53m 12s}   -0.74d {-00d 44' 14"}
+SUN_DIST:         63.93 [deg]
+MOON_POSTN:       98.42d {+06h 33m 42s}  +28.27d {+28d 16' 09"}
+MOON_DIST:        86.67 [deg]
+MOON_ILLUM:      58 [%]
+GAL_COORDS:      256.48,-55.24 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:       23.53,-60.88 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT SC Slew decision.  
+COMMENTS:        SC will NOT slew immediately to this target; Earth_limb constraint.  
+COMMENTS:        There maybe a delayed slew or no slew at all; see WAIT_TIME.  
+COMMENTS:        This does not match any source in the ground catalog.
+</pre>
+<a name="tc11g"></a>
+<pre>
+//////////////////////// XRT_Pos e-mail format /////////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:47:16 UT
+NOTICE_TYPE:    Swift-XRT Position
+TRIGGER_NUM:    100081,   Seg_Num: 0
+GRB_RA:          88.4207d {+05h 53m 41s} (J2000),
+                 88.4630d {+05h 53m 51s} (current),
+                 87.9501d {+05h 51m 48s} (1950)
+GRB_DEC:        -31.4043d {-31d 24' 14"} (J2000),
+                -31.4036d {-31d 24' 12"} (current),
+                -31.4131d {-31d 24' 46"} (1950)
+GRB_ERROR:      7.1 [arcsec radius, statistical only]
+GRB_INTEN:      2.15e-11 [erg/cm2/sec]                       <==The switch from 'arb' to 'cgs' units was 14nov05
+GRB_SIGNIF:     3.60 [sigma]
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3373.16 SOD {00:56:13.16} UT,   91.8 [sec] since BAT Trigger Time
+TAM[0-3]:       327.38  236.13  260.73  256.29
+AMPLIFIER:      2
+WAVEFORM:       134
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.68 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.45 [deg]
+GAL_COORDS:     236.86,-25.28 [deg] galactic lon,lat of the burst
+ECL_COORDS:      87.66,-54.83 [deg] ecliptic lon,lat of the burst
+COMMENTS:       SWIFT-XRT Coordinates.
+</pre>
+<a name="tc11h"></a>
+<pre>
+//////////////////////// XRT_Pos_Nack e-mail format ////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:47:16 UT
+NOTICE_TYPE:    Swift-XRT Nack-Position
+TRIGGER_NUM:    100012,   Seg_Num: 0
+POINT_RA:        88.4207d {+05h 53m 41s} (J2000)
+POINT_DEC:      -31.4043d {-31d 24' 14"} (J2000)
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3373.16 SOD {00:56:13.16} UT
+COUNTS:         12    Min_needed= 40
+STD_DEV:        12.89   Max_StdDev_for_Good=50.00
+PH2_ITER:       8    Max_iter_allowed= 12
+ERROR_CODE:     1
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.68 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.45 [deg]
+GAL_COORDS:     236.86,-25.28 [deg] galactic lon,lat of the burst
+ECL_COORDS:      87.66,-54.83 [deg] ecliptic lon,lat of the burst
+COMMENTS:       SWIFT-XRT Nack-Position.
+COMMENTS:       No source found in the image.
+</pre>
+<a name="tc11i"></a>
+<pre>
+//////////////////////// UPDATED XRT_Pos e-mail format /////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:49:56 UT
+NOTICE_TYPE:    Swift-XRT Position UPDATE
+TRIGGER_NUM:    100081,   Seg_Num: 0
+GRB_RA:          88.4207d {+05h 53m 41s} (J2000),
+                 88.4630d {+05h 53m 51s} (current),
+                 87.9501d {+05h 51m 48s} (1950)
+GRB_DEC:        -31.4043d {-31d 24' 14"} (J2000),
+                -31.4036d {-31d 24' 12"} (current),
+                -31.4131d {-31d 24' 46"} (1950)
+GRB_ERROR:      3.8 [arcsec radius, statistical only]
+GRB_INTEN:      2.15e-11 [erg/cm2/sec]                       <==The switch from 'arb' to 'cgs' units was 14nov05
+GRB_SIGNIF:     3.60 [sigma]
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3373.16 SOD {00:56:13.16} UT,   91.8 [sec] since BAT Trigger Time
+TAM[0-3]:       327.38  236.13  260.73  256.29
+AMPLIFIER:      2
+WAVEFORM:       134
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.68 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.45 [deg]
+GAL_COORDS:     236.86,-25.28 [deg] galactic lon,lat of the burst
+ECL_COORDS:      87.66,-54.83 [deg] ecliptic lon,lat of the burst
+COMMENTS:       SWIFT-XRT Coordinates.
+</pre>
+<a name="tc11j"></a>
+<pre>
+//////////////////////// XRT_Image e-mail format ///////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:47:19 UT
+NOTICE_TYPE:    Swift-XRT Image 
+TRIGGER_NUM:    100081,   Seg_Num: 0 
+GRB_RA:          88.4207d {+05h 53m 41s} (J2000),
+                 88.4630d {+05h 53m 51s} (current),
+                 87.9501d {+05h 51m 48s} (1950)
+GRB_DEC:        -31.4043d {-31d 24' 14"} (J2000),
+                -31.4036d {-31d 24' 12"} (current),
+                -31.4131d {-31d 24' 46"} (1950)
+GRB_ERROR:      27.3 [arcsec, statistical only]
+GRB_INTEN:      13 [cnts]
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3372.79 SOD {00:56:12.79} UT
+CENTRIOD_X:     551.22,  raw= 551  [pixels]
+CENTRIOD_Y:     576.27,  raw= 576  [pixels]
+ROLL:           13.08 [deg]
+GAIN:           1
+MODE:           3, Long Image
+WAVEFORM:       134
+EXPO_TIME:      0.00 [sec]
+GRB_POS_XRT_Y:  652.67
+GRB_POS_XRT_Z:  593.91
+IMAGE_URL:      sw00010008100msxim.img
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.68 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.45 [deg]
+GAL_COORDS:     236.86,-25.28 [deg] galactic lon,lat of the burst
+ECL_COORDS:      87.66,-54.83 [deg] ecliptic lon,lat of the burst
+COMMENTS:       SWIFT-XRT Image.
+</pre>
+<a name="tc11k"></a>
+<pre>
+//////////////////////// XRT_Spectrum e-mail format ////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:47:26 UT
+NOTICE_TYPE:    Swift-XRT Spectrum
+TRIGGER_NUM:    100081,   Seg_Num: 0
+SPEC_START_DATE:13187 TJD;   183 DOY;   04/07/01
+SPEC_START_TIME:3383.79 SOD {00:56:23.79} UT,     105.1 [sec] since BAT Trigger Time
+SPEC_STOP_DATE: 13187 TJD;   183 DOY;   04/07/01
+SPEC_STOP_TIME: 3383.79 SOD {00:56:23.79} UT
+LIVETIME:         8.26 [sec]
+POINT_RA:        88.67d {+05h 54m 42s} (J2000)
+POINT_DEC:      -31.24d {-31d 14' 33"} (J2000)
+MODE:           5, Low Rate Photodiode
+WAVEFORM:       50
+BIAS:           0
+TERM_COND:      1
+SPEC_URL:       sw00010008100msx.pha
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.47 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 27"}
+MOON_DIST:      121.57 [deg]
+GAL_COORDS:     236.76,-25.02 [deg] galactic lon,lat of the pointing direction
+ECL_COORDS:      88.04,-54.67 [deg] ecliptic lon,lat of the pointing direction
+COMMENTS:       SWIFT-XRT Spectrum.
+COMMENTS:       This spectrum accumulation was terminated by the 'Time' condition.
+</pre>
+<a name="tc11l"></a>
+<pre>
+//////////////////////// XRT_Lightcurve e-mail format //////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:52:31 UT
+NOTICE_TYPE:    Swift-XRT Lightcurve
+TRIGGER_NUM:    100081,   Seg_Num: 0
+POINT_RA:        88.674d {+05h 54m 42s} (J2000)
+POINT_DEC:      -31.254d {-31d 15' 15"} (J2000)
+LC_START_DATE:  13187 TJD;   183 DOY;   04/07/01
+LC_START_TIME:  3375.78 SOD {00:56:15.78} UT,   97.1 [sec] since BAT Trigger Time
+LC_STOP_DATE:   13187 TJD;   183 DOY;   04/07/01
+LC_STOP_TIME:   3677.47 SOD {01:01:17.47} UT
+LC_LIVE_TIME:   146.69 [sec], 49.8%
+DELTA_TIME:     86098.31 [sec]
+N_BINS:         76
+TERM_COND:      1
+LC_URL:         sw00010008100msx.lc
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.49 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.56 [deg]
+GAL_COORDS:     236.77,-25.03 [deg] galactic lon,lat of the pointing direction
+ECL_COORDS:      88.04,-54.68 [deg] ecliptic lon,lat of the pointing direction
+COMMENTS:       SWIFT-XRT Lightcurve.
+COMMENTS:       This lightcurve was terminated by the 'Time' condition.
+</pre>
+<a name="tc11m"></a>
+<pre>
+//////////////////////// UVOT_SrcList e-mail format ///////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:47:42 UT
+NOTICE_TYPE:    Swift-UVOT Source List
+TRIGGER_NUM:    100081,   Seg_Num: 0
+POINT_RA:        88.651d {+05h 54m 36s} (J2000)
+POINT_DEC:      -31.288d {-31d 17' 16"} (J2000)
+POINT_ROLL:     13.091d
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3373.79 SOD {00:56:13.79} UT,   98.5 [sec] since BAT Trigger Time
+FILTER:         4, UVM2
+N_STARS:        2
+X_OFFSET:       1088 [pixels]
+Y_OFFSET:       380 [pixels]
+X_MAX:          0 [pixels]
+Y_MAX:          2 [pixels]
+SL_URL:         sw00010008100msufc.fits
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.52 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.53 [deg]
+GAL_COORDS:     236.80,-25.05 [deg] galactic lon,lat of the pointing direction
+ECL_COORDS:      88.00,-54.72 [deg] ecliptic lon,lat of the pointing direction
+COMMENTS:       SWIFT-UVOT Source List.
+</pre>
+<a name="tc11n"></a>
+<pre>
+//////////////////////// UVOT_Image e-mail format //////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Fri 01 Oct 04 14:50:24 UT
+NOTICE_TYPE:    Swift-UVOT Image
+TRIGGER_NUM:    100081,   Seg_Num: 0
+POINT_RA:        88.651d {+05h 54m 36s} (J2000)
+POINT_DEC:      -31.288d {-31d 17' 16"} (J2000)
+ROLL:           0.000d
+IMG_START_DATE: 13187 TJD;   183 DOY;   04/07/01
+IMG_START_TIME: 3374.25 SOD {00:56:14.25} UT,   98.5 [sec] since BAT Trigger Time
+FILTER:         4, UVM2
+X_OFFSET:       1088 [pixels]
+Y_OFFSET:       380 [pixels]
+X_MAX:          0 [pixels]
+Y_MAX:          2 [pixels]
+IM_URL:         sw00010008100msuni.fits
+SUN_POSTN:      100.38d {+06h 41m 31s}  +23.10d {+23d 05' 43"}
+SUN_DIST:        55.52 [deg]
+MOON_POSTN:     258.03d {+17h 12m 07s}  -26.29d {-26d 17' 26"}
+MOON_DIST:      121.53 [deg]
+GAL_COORDS:     236.80,-25.05 [deg] galactic lon,lat of the pointing direction
+ECL_COORDS:      88.00,-54.72 [deg] ecliptic lon,lat of the pointing direction
+COMMENTS:       SWIFT-UVOT Image.
+</pre>
+<a name="tc11o"></a>
+<pre>
+//////////////////////// UVOT_Pos e-mail format ////////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Fri 07 Jul 06 17:05:27 UT
+NOTICE_TYPE:     Swift-UVOT Position
+TRIGGER_NUM:     12349,   Seg_Num: 0
+GRB_RA:           82.3449d {+05h 29m 22.77s} (J2000),
+                  82.5208d {+05h 30m 05.00s} (current),
+                  80.9754d {+05h 23m 54.08s} (1950)
+GRB_DEC:         +69.3209d {+69d 19' 15.2"} (J2000),
+                 +69.3256d {+69d 19' 32.1"} (current),
+                 +69.2805d {+69d 16' 49.8"} (1950)
+GRB_ERROR:       1.1 [arcsec radius, statistical only]
+GRB_MAG:         14.00 +/- 0.50 [mag]
+FILTER:          10, White
+IMG_START_DATE:  13886 TJD;   151 DOY;   06/05/31
+IMG_START_TIME:  63404.00 SOD {17:36:44.00} UT,   63404.0 [sec] since BAT Trigger Time
+SUN_POSTN:       106.76d {+07h 07m 01s}  +22.54d {+22d 32' 39"}
+SUN_DIST:         49.00 [deg]   Sun_angle= 1.6 [hr] (West of Sun)
+MOON_POSTN:      238.38d {+15h 53m 30s}  -24.85d {-24d 50' 46"}
+MOON_DIST:       133.27 [deg]
+MOON_ILLUM:      86 [%]
+GAL_COORDS:      143.34, 18.45 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:       86.12, 45.98 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT UVOT Position Notice.  
+COMMENTS:        This Notice was ground-generated -- not flight-generated.  
+COMMENTS:        This is a fake GRB  
+</pre>
+<a name="tc11p"></a>
+<pre>
+//////////////////////// UVOT_Pos-Nack e-mail format ///////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Wed 28 Jun 06 14:39:21 UT
+NOTICE_TYPE:     Swift-UVOT Nack-Position
+TRIGGER_NUM:     100081,   Seg_Num: 2
+REGION_RA:        88.4206d {+05h 53m 40.9s} (J2000),
+                  88.4755d {+05h 53m 54.1s} (current),
+                  87.9500d {+05h 51m 47.9s} (1950)
+REGION_DEC:      -31.4042d {-31d 24' 15.1"} (J2000),
+                 -31.4033d {-31d 24' 11.9"} (current),
+                 -31.4130d {-31d 24' 46.8"} (1950)
+REGION_ERROR:    180.0 [arcsec search radius]
+REGION_SOURCE:   BAT location
+MAG_LIMIT:       19.51 [mag]   5.00 [sigma]
+FILTER:          4, UVM2
+IMG_START_DATE:  13674 TJD;   -61 DOY;   06/01/-61
+IMG_START_TIME:  3373.78 SOD {00:56:13.78} UT,   3373.8 [sec] since BAT Trigger Time
+SUN_POSTN:        97.37d {+06h 29m 28s}  +23.27d {+23d 15' 55"}
+SUN_DIST:         55.33 [deg]   Sun_angle= 0.6 [hr] (West of Sun)
+MOON_POSTN:      134.60d {+08h 58m 23s}  +20.96d {+20d 57' 26"}
+MOON_DIST:        68.52 [deg]
+MOON_ILLUM:      9 [%]
+GAL_COORDS:      236.86,-25.28 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:       87.66,-54.83 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT-UVOT Nack Position.
+COMMENTS:        A point_source was not found.
+COMMENTS:        The search was complicated by a nearby 7th mag star.
+</pre>
+<a name="tc11r"></a>
+<pre>
+//////////////////////// BAT_Slew_Pos e-mail format ////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Thu 17 Apr 08 17:49:31 UT
+NOTICE_TYPE:     Swift-BAT Slew GRB Position
+ID_NUM:          4
+GRB_RA:          223.800d {+14h 55m 12s} (J2000),
+                 223.870d {+14h 55m 29s} (current),
+                 223.377d {+14h 53m 30s} (1950)
+GRB_DEC:         +48.410d {+48d 24' 36"} (J2000),
+                 +48.377d {+48d 22' 36"} (current),
+                 +48.612d {+48d 36' 42"} (1950)
+GRB_ERROR:       6.77 [arcmin radius, statistical only]
+GRB_INTEN:       785889 [cnts]    Image_Peak=0 [image_cnts]
+TRIGGER_DUR:     70.596 [sec] 
+TRIGGER_INDEX:   8     Criteria: (S(15-50) OR H(50-150)) > 5.0 sigma AND B(15-150) > 4.0 sigma
+ENERGY_RANGE:    15-150 keV
+BKG_INTEN:       0 [cnts]
+BKG_TIME:        0.00 SOD {00:00:00.00} UT
+BKG_DUR:         0 [sec]
+GRB_DATE:        14573 TJD;   108 DOY;   08/04/17
+GRB_TIME:        37993.18 SOD {10:33:13.18} UT
+SOLN_STATUS:     0x4011
+RATE_SIGNIF:     0.00 [sigma]
+IMAGE_SIGNIF:    4.59 [sigma]
+SUN_POSTN:        26.08d {+01h 44m 20s}  +10.79d {+10d 47' 28"}
+SUN_DIST:        118.77 [deg]   Sun_angle= 10.8 [hr] (West of Sun)
+MOON_POSTN:      176.72d {+11h 46m 53s}   -1.54d {-01d 32' 09"}
+MOON_DIST:        64.44 [deg]
+MOON_ILLUM:      93 [%]
+GAL_COORDS:       82.88, 57.97 [deg] galactic lon,lat of the burst (or transient)
+ECL_COORDS:      194.51, 60.34 [deg] ecliptic lon,lat of the burst (or transient)
+COMMENTS:        SWIFT-BAT Slew GRB Coordinates.  
+COMMENTS:        A point_source was found.  
+COMMENTS:        This does not match any source in the ground catalog.  
+COMMENTS:        This is not a GRB.  
+COMMENTS:        Very high confidence of reality (silver-plated).  
+COMMENTS:        This Notice was ground-processed from flight-data.
+</pre>
+<a name="tc11q"></a>
+<pre>
+////////////////////// Swift_POINTDIR e-mail format ////////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Fri 10 Feb 06 23:27:42 UT
+NOTICE_TYPE:     SWIFT Pointing Direction
+NEXT_POINT_RA:   272.164d {+18h 08m 39s} (J2000)
+NEXT_POINT_DEC:  -20.411d {-20d 24' 39"} (J2000)
+NEXT_POINT_ROLL: 102.770d
+SLEW_TIME:       84480.00 SOD {23:28:00.00} UT
+SLEW_DATE:       13776 TJD;    41 DOY;   06/02/10
+OBS_TIME:        540.00 [sec]   (=9.0 [min])
+TGT_NAME:        SGR1806-20 
+TGT_NUM:         35315,   Seg_Num: 1
+MERIT:           50.00
+INST_MODES:      BAT=0=0x0  XRT=0=0x0  UVOT=4101=0x1005
+SUN_POSTN:       324.46d {+21h 37m 49s}  -14.15d {-14d 08' 43"}
+SUN_DIST:         50.04 [deg]   Sun_angle= 3.5 [hr] (West of Sun)
+MOON_POSTN:      120.85d {+08h 03m 24s}  +25.25d {+25d 15' 05"}
+MOON_DIST:       153.26 [deg]
+MOON_ILLUM:      96 [%]
+GAL_COORDS:       10.00, -0.24 [deg] galactic lon,lat of the pointing direction
+ECL_COORDS:      272.03,  3.01 [deg] ecliptic lon,lat of the pointing direction
+COMMENTS:        SWIFT Slew Notice.  
+COMMENTS:        The spacecraft longitude,latitude at Notice_time is 150.74,-10.52 [deg]. 
+</pre>
+<a name="tc11s"></a>
+<pre>
+////////////////////// Swift_BAT_MONITOR e-mail format /////////////////////
+TITLE:           GCN/SWIFT NOTICE
+NOTICE_DATE:     Mon 07 Jun 10 18:25:55 UT
+NOTICE_TYPE:     Swift-BAT Monitor Alert
+SOURCE_OBJ:      GX 301-2
+REF_NUM:         2
+RA:              186.650d {+12h 26m 36s} (J2000),
+                 186.797d {+12h 27m 11s} (current),
+                 185.950d {+12h 23m 48s} (1950)
+DEC:             -62.767d {-62d 46' 00"} (J2000),
+                 -62.825d {-62d 49' 28"} (current),
+                 -62.490d {-62d 29' 24"} (1950)
+CURR_FLUX:       0.2444 [cnts/cm2/sec]   1071.00 [mCrab]
+BASELINE_FLUX:   0.0221 [cnts/cm2/sec]
+SIGNIF:          14.65 [sigma]
+OUTBURST_DATE:   15354 TJD;   158 DOY;   10/06/07
+OUTBURST_TIME:   12352.00 SOD {03:25:52.00} UT
+SAMPLING:        Daily
+SOLN_STATUS:     0x0
+FLAGS:           0x40000001
+LC_URL:          http://swift.gsfc.nasa.gov/docs/swift/results/transients/GX301-2
+SUN_POSTN:        75.76d {+05h 03m 04s}  +22.79d {+22d 47' 32"}
+SUN_DIST:        119.72 [deg]   Sun_angle= -7.4 [hr] (East of Sun)
+MOON_POSTN:       15.18d {+01h 00m 43s}  +12.11d {+12d 06' 33"}
+MOON_DIST:       128.93 [deg]
+MOON_ILLUM:      24 [%]
+GAL_COORDS:      300.09, -0.03 [deg] galactic lon,lat of the known-source transient
+ECL_COORDS:      221.51,-52.63 [deg] ecliptic lon,lat of the known-source transient
+COMMENTS:        SWIFT-BAT Monitor.  
+COMMENTS:        This Notice indicates the start/onset of the outburst.  
+COMMENTS:        This Notice was ground-processed from flight-data.  
+</pre>
+
+<hr>
+<a name="tc12"></a>
+<b>Cell/Pager Examples</b>
+<p>
+Examples of the (regular) cell/pager formats are shown below.<br>
+There are no "Subject" lines for these e-mails sent to the cell/pager companies<br>
+because the Subject line would use up valuable character counts<br>
+from the maximum displayable for the body of the message.<br>
+RA,Dec values are in Current epoch.<br>
+<pre>
+/////////////////////////BAT_Alert Cell/Pager format////////////////////////////
+GCN/SWIFT-BAT
+GRB Alert
+TIME: 13:31:15.52 UT
+R_Signif=5.56 sigma
+/////////////////////////BAT_Pos Cell/Pager format//////////////////////////////
+GCN/SWIFT-BAT
+GRB Position
+RA=74.707d  DEC=-36.245d
+ERR=4.00arcmin
+TIME: 14:47:58.40 UT
+I=633.45
+R_Signif=12.31
+I_Signif=9.32
+/////////////////////////BAT_Pos_Nack Cell/Pager format/////////////////////////
+GCN/SWIFT-BAT
+GRB Nack Position
+TIME: 13:31:16.41 UT
+R_Signif=12.73
+I_Signif=0.00
+/////////////////////////BAT_LC Cell/Pager format///////////////////////////////
+GCN/SWIFT-BAT
+GRB Lightcurve
+RA=66.783d  DEC=-19.459d
+TIME: 13:25:48.99 UT
+URL=sw00100027000msb.lc
+/////////////////////////FOM_Observe Cell/Pager format//////////////////////////
+GCN/SWIFT-BAT
+FOM2Observe
+RA=131.405d  DEC=-19.631d
+TIME: 14:56:24.38 UT
+MERIT=100.00
+RATE_SIGNIF=12.31 sigma
+TRIG_INDEX=420
+/////////////////////////SC_Slew Cell/Pager format//////////////////////////////
+GCN/SWIFT-BAT
+SC2Slew
+RA=74.707d  DEC=-36.245d
+TIME: 14:47:58.40 UT
+WAIT_T=0 [sec]
+OBS_T=1135 [sec]
+MERIT=100.00
+RATE_SIGNIF=255.99 sigma
+TRIG_INDEX=415
+/////////////////////////XRT_Pos Cell/Pager format//////////////////////////////
+GCN/SWIFT-XRT
+Position
+RA=121.966d  DEC=-19.534d
+ERR=5.21arcsec
+TIME: 13:28:45.77 UT
+I=36.48 sigma
+/////////////////////////XRT_Pos_Nack Cell/Pager format/////////////////////////
+GCN/SWIFT-XRT
+Nack Position
+TIME: 13:28:45.77 UT
+I=3.48 sigma
+/////////////////////////XRT_Image Cell/Pager format////////////////////////////
+GCN/SWIFT-XRT
+Image
+PNT: RA=121.966d  DEC=-19.534d
+SIGMA=1.70
+TIME: 13:28:45.00 UT
+URL=sw00100027000msxim.img
+/////////////////////////XRT_Spectrum Cell/Pager format/////////////////////////
+GCN/SWIFT-XRT
+Spectrum
+PNT: RA=121.966d  DEC=-19.534d
+SIGMA=1.70
+TIME: 13:28:45.00 UT
+URL=sw00010008100msx.pha
+/////////////////////////XRT_Lightcurve Cell/Pager format///////////////////////
+GCN/SWIFT-XRT
+Lightcurve
+PNT: RA=121.966d  DEC=-19.534d
+SIGMA=1.70
+TIME: 13:28:45.00 UT
+URL=sw00010008100msx.lc
+/////////////////////////UVOT_SourceList Cell/Pager format//////////////////////
+GCN/SWIFT-UVOT
+Source List
+PNT: RA=122.224d  DEC=-19.558d
+TIME: 13:28:44.00 UT
+DeltaT: 211.23 [sec]
+N_bin= 89,  Term= 2
+URL=sw00100027000msufc.fits
+/////////////////////////UVOT_Image Cell/Pager format///////////////////////////
+GCN/SWIFT-UVOT
+Image
+PNT: RA=122.224d  DEC=-19.558d
+TIME: 13:28:44.89 UT
+I=0.00 sigma
+URL=sw00100027000msuni.fits
+/////////////////////////UVOT_Pos Cell/Pager format/////////////////////////////
+GCN/SWIFT-UVOT
+Position
+PNT: RA=123.524d  DEC=-19.124d
+TIME: 13:28:44.89 UT
+I=19.23 mag
+/////////////////////////UVOT_Pos-Nack Cell/Pager format////////////////////////
+/////////////////////Swift_PointDir Cell/Pager format///////////////////////////
+GCN/SWIFT
+PointDir
+NEXT_RA=243.781d  DEC=+65.706d
+T=05/03/24 21:23:00.00 UT
+Obs=1320.00 sec
+///////////////////////////////////////////////////////////////////////////
+</pre>
+
+<hr>
+<a name="tc13"></a>
+<b>Short-form Cell/Pager Examples</b>
+<p>
+Examples of the short-form pager format are shown below.<br>
+There are no "Subject" lines for these e-mails sent to the pager companies,<br>
+because the Subject-line would use up valuable character counts<br>
+from the maximum displayable for the body of the message.<br>
+And it was the very limited display character count of some companies<br>
+that motivated the short-form pager method in the first place.<br>
+RA,Dec are in B1950 epoch.<br>
+<pre>
+[i need to fill in the rest of these examples!!!]
+/////////////////////////BAT_Alert Short-Cell/Pager format///////////////////////
+SWIFT
+BAT GRB Alert
+T=13:31:15.52 Signif=5.56
+/////////////////////////BAT_Pos Short-Cell/Pager format/////////////////////////
+SWIFT
+BAT GRB Position
+RA=74.707  DEC=-36.245
+/////////////////////////BAT_Pos_Nack Short-Cell/Pager format////////////////////
+/////////////////////////BAT_LC Short-Cell/Pager format//////////////////////////
+/////////////////////////FOM_Observe Short-Cell/Pager format/////////////////////
+/////////////////////////SC_Slew Short-Cell/Pager format/////////////////////////
+SWIFT
+SC Will Slew
+T=02:54:19.30 RateSignif=15.65
+/////////////////////////XRT_Pos Short-Cell/Pager format/////////////////////////
+SWIFT
+XRT Position
+RA=74.715  DEC=-36.255
+/////////////////////////XRT_Pos_Nack Short-Cell/Pager format////////////////////
+/////////////////////////XRT_Image Short-Cell/Pager format///////////////////////
+/////////////////////////XRT_Spectrum Short-Cell/Pager format////////////////////
+/////////////////////////XRT_Lightcurve Short-Cell/Pager format//////////////////
+/////////////////////////UVOT_SrcList Short-Cell/Pager format////////////////////
+/////////////////////////UVOT_Image Short-Cell/Pager format//////////////////////
+/////////////////////////UVOT_Pos Short-Cell/Pager format////////////////////////
+/////////////////////////UVOT_Pos-Nack Short-Cell/Pager format///////////////////
+/////////////////////////////////////////////////////////////////////////////////
+</pre>
+<p>
+<hr>
+<a name="tc14"></a>
+<b>Subject-only Examples</b>
+<p>
+There are two variations of the Subject-only format: decimal degrees (Current epoch)<br>
+and RA=hh:mm:ss Dec=DDdMMmSSs format (J2000 epoch).  The two variations are shown below:
+<pre>
+[i need to fill in these examples!!!]
+/////////////////////////BAT_Alert Subject-only format///////////////////////
+/////////////////////////BAT_Pos Subject-only format/////////////////////////
+/////////////////////////BAT_Pos_Nack Subject-only format////////////////////
+/////////////////////////BAT_LC Subject-only format//////////////////////////
+/////////////////////////FOM_Observe Subject-only format/////////////////////
+/////////////////////////SC_Slew Subject-only format/////////////////////////
+/////////////////////////XRT_Pos Subject-only format/////////////////////////
+/////////////////////////XRT_Pos_Nack Subject-only format////////////////////
+/////////////////////////XRT_Image Subject-only format///////////////////////
+/////////////////////////XRT_Spectrum Subject-only format////////////////////
+/////////////////////////XRT_Lightcurve Subject-only format//////////////////
+/////////////////////////UVOT_SrcList Subject-only format////////////////////
+/////////////////////////UVOT_Image Subject-only format//////////////////////
+/////////////////////////UVOT_Pos Subject-only format////////////////////////
+/////////////////////////UVOT_Pos-Nack Subject-only format///////////////////
+/////////////////////////////////////////////////////////////////////////////
+</pre>
+<p>
+<hr>
+<a name="tc15"></a>
+<b>Test Notice Example</b>
+<p>
+Here is an example of the Swift BAT Position Test Notice (e_mail format).
+<pre>
+//////////////////////////////////////////////////////////////////////////////
+TITLE:          GCN/SWIFT NOTICE
+NOTICE_DATE:    Sun 24 Oct 04 16:14:37 UT
+NOTICE_TYPE:    Swift-BAT GRB Test Position 
+TRIGGER_NUM:    99999,   Seg_Num: 0
+GRB_RA:         252.000d {+16h 47m 60s} (J2000),
+                252.044d {+16h 48m 11s} (current),
+                251.545d {+16h 46m 11s} (1950)
+GRB_DEC:        +35.000d {+34d 59' 60"} (J2000),
+                +34.992d {+34d 59' 30"} (current),
+                +35.087d {+35d 05' 13"} (1950)
+GRB_ERROR:      3.00 [arcmin radius, statistical only]
+GRB_INTEN:      1000 [cnts]    Peak=123 [cnts/sec] 
+BKG_INTEN:      500 [cnts]
+BKG_TIME:       77450.00 SOD {21:31:00.00} UT
+BKG_DUR:        16 [sec]
+GRB_DATE:       13302 TJD;   298 DOY;   04/10/24
+GRB_TIME:       58477.00 SOD {16:14:37.00} UT
+GRB_PHI:        123.54 [deg]
+GRB_THETA:       12.34 [deg]
+TRIGGER_INDEX:  10027
+SOLN_STATUS:    3
+RATE_SIGNIF:    12.31 [sigma]
+IMAGE_SIGNIF:   9.80 [sigma]
+MERIT_PARAMS:    +1  -2  +3  -4  +5  -6  +7  -8  +9 -10 
+SUN_POSTN:      209.44d {+13h 57m 45s}  -12.03d {-12d 01' 40"}
+SUN_DIST:        61.95 [deg]
+MOON_POSTN:     352.11d {+23h 28m 27s}   -7.26d {-07d 15' 46"}
+MOON_DIST:      102.39 [deg]
+MOON_ILLUM:     87 [%]
+GAL_COORDS:     57.33,39.46 [deg] galactic lon,lat of the burst
+ECL_COORDS:     242.52,56.73 [deg] ecliptic lon,lat of the burst
+COMMENTS:       SWIFT-BAT GRB TEST Coordinates.
+COMMENTS:       This is a rate trigger.
+COMMENTS:       A point_source was found.
+COMMENTS:       This does not match any source in the on-board catalog.
+COMMENTS:       This is a GRB.
+//////////////////////////////////////////////////////////////////////////////
+</pre>
+<p>
+<hr>
+<a href="gcn_main.html">Return to GCN/TAN homepage</a>.
+<hr>
+<i>This file was last modified on 07-May-12.</i>
+</body>
+</html>
