@@ -3,6 +3,7 @@
 '''
 import logging
 import os
+import string
 
 import ephem
 import lxml
@@ -18,6 +19,24 @@ from simple_telegram_messenger import send_telegram_message
 __author__ = 'william'
 
 dust_file = str(os.path.dirname(__file__) + '/../data/SFD_dust_1024_%s.fits')
+
+
+def format_filename(s):
+    """
+    Take a string and return a valid filename constructed from the string.
+
+        Uses a whitelist approach: any characters not present in valid_chars are
+        removed. Also spaces are replaced with underscores.
+
+        Note: this method may produce invalid filenames such as ``, `.` or `..`
+        When I use this method I prepend a date string like '2009_01_15_19_46_32_'
+        and append a file extension like '.txt', so I avoid the potential of using
+        an invalid filename.
+    """
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    filename = ''.join(c for c in s if c in valid_chars)
+    filename = filename.replace(' ', '_')  # I don't like spaces in filenames.
+    return filename
 
 
 def t80s_decorator(*notice_types):
@@ -48,7 +67,7 @@ def archive(payload, root, events_dir='./', www_dir=''):
     working directory. The filename is a URL-escaped version of the messages'
     IVORN."""
     ivorn = root.attrib['ivorn']
-    event_file = ivorn.strip('ivo://nasa.gsfc.gcn/').replace('#', '_')  # urllib.quote_plus(( ))
+    event_file = ivorn.strip('ivo://nasa.gsfc.gcn/')
     filename_raw = "%s/raw/%s.xml" % (events_dir, event_file)
     filename_html = "%s/html/%s.html" % (events_dir, event_file)
     html = voevent2html.format_to_string(VOEventTools.parseString(payload))
@@ -110,9 +129,6 @@ if __name__ == '__main__':
     configuration.update({
         'packet_types': range(1000), 'min_grb_alt': -100, 'max_extinction': 100.0})
     # 'packet_types': [60, 61, 62, 63, 64, 65], 'min_grb_alt': .523598776, 'max_extinction': 100.0}
-
-    # TODO: Add extinction check
-    # TODO: Add to Zenoss pygcn-list check
 
     # Init Observatory Ephem calculator.
     observatory = ephem.Observer()
